@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halo 文章发布工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .option-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .option-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .option-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            min-height: 50px;
+        }
+
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .preview {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            display: none;
+        }
+
+        .preview.show {
+            display: block;
+        }
+
+        .preview h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .preview-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .preview-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .help-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .example-prompt {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .example-prompt h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .example-prompt code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .debug-log {
+            margin-top: 30px;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            border-radius: 8px;
+            border: 1px solid #333;
+            display: none;
+        }
+
+        .debug-log.show {
+            display: block;
+        }
+
+        .debug-log h3 {
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .debug-log pre {
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'Fira Code', 'SFMono-Regular', Consolas, monospace;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .history-list li {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .history-list li:last-child { border-bottom: none; }
+        .history-list li:hover { background: #e9ecef; }
+
+        .history-list .history-title { font-weight: 500; color: #333; }
+        .history-list .history-meta { font-size: 12px; color: #666; }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header h1 { font-size: 1.6em; }
+            .header p { font-size: 0.95em; }
+            .header > div { flex-direction: column; gap: 15px; text-align: center; }
+            .content { padding: 20px; }
+            .option-group { min-width: 100%; }
+            .button-group { flex-direction: column; }
+            button { min-height: 48px; }
+            .preview-content { max-height: 400px; }
+            .preview-actions { flex-wrap: wrap; }
+            .history-list li { min-height: 44px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .header { padding: 20px 15px; }
+            .header h1 { font-size: 1.35em; }
+            .content { padding: 15px; }
+            textarea { min-height: 150px; font-size: 16px; padding: 12px; }
+            select { min-width: 100% !important; }
+            .tags-input { min-height: 44px; }
+            .tag-input { min-width: 60px; }
+            .history-list li { padding: 14px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>🚀 Halo 文章发布工具</h1>
+                    <p>使用 DeepSeek API 生成文章并发布到 Halo</p>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" style="color: white; text-decoration: none; padding: 10px 20px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; transition: background 0.3s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">登出</a>
+            </div>
+        </div>
+        
+        <div class="content">
+            <form id="articleForm">
+                <div class="form-group">
+                    <label for="prompt">文章 Prompt</label>
+                    <textarea 
+                        id="prompt" 
+                        name="prompt" 
+                        placeholder="请输入你想要生成的文章的 prompt，例如：&#10;&#10;请写一篇关于 Python 异步编程的技术文章，介绍 asyncio 的使用方法和最佳实践。"
+                        required
+                    ></textarea>
+                    <div class="help-text">
+                        💡 提示：你可以描述文章的主题、内容要求、风格等。系统会自动添加格式要求。
+                    </div>
+                    <div class="example-prompt">
+                        <h4>示例 Prompt：</h4>
+                        <p>请写一篇关于 <code>React Hooks</code> 的技术文章，包括：</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Hooks 的基本概念和使用场景</li>
+                            <li>常用的 Hooks（useState, useEffect, useContext）</li>
+                            <li>自定义 Hooks 的编写方法</li>
+                            <li>实际项目中的应用案例</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="options">
+                    <div class="option-group">
+                        <label>
+                            <input type="checkbox" id="use_template" checked>
+                            <span>使用格式模板</span>
+                        </label>
+                        <div class="help-text">勾选后会自动添加 HTML 格式要求</div>
+                    </div>
+                    <div class="option-group">
+                        <label for="template_id">写作风格</label>
+                        <select id="template_id" style="padding: 8px 12px; border-radius: 6px; border: 2px solid #e0e0e0; font-size: 14px; min-width: 160px;">
+                            {% for opt in template_options or [] %}
+                            <option value="{{ opt.id }}">{{ opt.label }}</option>
+                            {% endfor %}
+                            {% if not template_options %}
+                            <option value="default">默认</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="language">输出语言</label>
+                        <select id="language" style="padding: 8px 12px; border-radius: 6px; border: 2px solid #e0e0e0; font-size: 14px; min-width: 120px;">
+                            <option value="zh">中文</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>
+                            <input type="checkbox" id="auto_extract_tags">
+                            <span>根据文章自动提取标签与分类</span>
+                        </label>
+                        <div class="help-text">勾选后生成完会调用 AI 提取标签和分类，并与你填写的合并</div>
+                    </div>
+                    <div class="option-group" style="flex: 1 1 100%;">
+                        <label>
+                            <input type="checkbox" id="generate_cover">
+                            <span>自动生成封面图</span>
+                        </label>
+                        <div class="help-text">勾选后根据标题和摘要获取封面并设置为 Halo 文章封面</div>
+                        <div id="coverOptions" style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; display: none;">
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-size: 0.95em;">封面来源：</label>
+                                <select id="cover_source" style="margin-left: 8px; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd;">
+                                    <option value="web_search">网络搜索（从网上搜索适配图片）</option>
+                                    <option value="ollama">Ollama（本地文生图）</option>
+                                    <option value="sd_webui">SD WebUI（本地文生图）</option>
+                                </select>
+                            </div>
+                            <div id="ollamaUrlWrap" class="cover-url-wrap" style="display: none;">
+                                <label>Ollama URL：</label>
+                                <input type="text" id="ollama_url" placeholder="http://localhost:11434" style="width: 100%; max-width: 400px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; margin-top: 4px;">
+                            </div>
+                            <div id="sdWebuiUrlWrap" class="cover-url-wrap" style="display: none;">
+                                <label>SD WebUI URL：</label>
+                                <input type="text" id="sd_webui_url" placeholder="http://localhost:7860" style="width: 100%; max-width: 400px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; margin-top: 4px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>标签（可选）</label>
+                    <div class="tags-input" id="tagsContainer">
+                        <input type="text" class="tag-input" id="tagInput" placeholder="输入标签后按回车添加">
+                    </div>
+                    <div class="help-text">输入标签后按回车键添加，点击标签上的 × 可以删除</div>
+                </div>
+
+                <div class="form-group">
+                    <label>分类（可选）</label>
+                    <div class="tags-input" id="categoriesContainer">
+                        <input type="text" class="tag-input" id="categoryInput" placeholder="输入分类后按回车添加">
+                    </div>
+                    <div class="help-text">输入分类后按回车键添加，点击分类上的 × 可以删除</div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-secondary" id="generateOnlyBtn">
+                        仅生成（预览）
+                    </button>
+                    <button type="button" class="btn-secondary" id="generateBtn">
+                        生成并保存为草稿
+                    </button>
+                    <button type="button" class="btn-primary" id="generateAndPublishBtn">
+                        生成并发布
+                    </button>
+                </div>
+            </form>
+
+            <div id="result" class="result"></div>
+
+            <div id="preview" class="preview">
+                <h3>文章预览</h3>
+                <div class="preview-actions" style="margin-bottom: 12px;">
+                    <button type="button" class="btn-primary" id="publishPreviewBtn" disabled style="flex: none;">
+                        发布当前预览
+                    </button>
+                </div>
+                <div class="preview-content">
+                    <div class="preview-title" id="previewTitle"></div>
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 30px;">
+                <label>历史生成</label>
+                <div class="help-text">点击一条记录可加载到上方预览，再点击「发布当前预览」发布</div>
+                <ul id="historyList" class="history-list"></ul>
+            </div>
+
+            <div class="form-group" style="margin-top: 30px;">
+                <label>Halo 草稿箱</label>
+                <div class="help-text">从 Halo 拉取草稿列表，点击可加载到预览并发布</div>
+                <button type="button" class="btn-secondary" id="loadDraftsBtn" style="margin-bottom: 10px;">刷新草稿列表</button>
+                <ul id="draftsList" class="history-list"></ul>
+            </div>
+
+            <div id="debugLog" class="debug-log">
+                <h3>调试日志</h3>
+                <pre id="debugLogContent">暂无日志</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tags = [];
+        const categories = [];
+        let currentPreview = { title: null, content: null };
+
+        function getPayload() {
+            const coverSource = document.getElementById('cover_source') ? document.getElementById('cover_source').value : 'ollama';
+            const ollamaUrl = document.getElementById('ollama_url') ? document.getElementById('ollama_url').value.trim() : '';
+            const sdWebuiUrl = document.getElementById('sd_webui_url') ? document.getElementById('sd_webui_url').value.trim() : '';
+            return {
+                prompt: document.getElementById('prompt').value.trim(),
+                use_template: document.getElementById('use_template').checked,
+                template_id: document.getElementById('template_id').value,
+                language: (document.getElementById('language') && document.getElementById('language').value) || 'zh',
+                auto_extract_tags: !!(document.getElementById('auto_extract_tags') && document.getElementById('auto_extract_tags').checked),
+                generate_cover: !!(document.getElementById('generate_cover') && document.getElementById('generate_cover').checked),
+                cover_source: coverSource,
+                ollama_url: ollamaUrl || null,
+                sd_webui_url: sdWebuiUrl || null,
+                tags: tags,
+                categories: categories
+            };
+        }
+
+        function updateCoverOptionsVisibility() {
+            const cb = document.getElementById('generate_cover');
+            const opts = document.getElementById('coverOptions');
+            const src = document.getElementById('cover_source');
+            const ollamaWrap = document.getElementById('ollamaUrlWrap');
+            const sdWrap = document.getElementById('sdWebuiUrlWrap');
+            if (opts) opts.style.display = cb && cb.checked ? 'block' : 'none';
+            const v = src ? src.value : 'ollama';
+            if (ollamaWrap) ollamaWrap.style.display = v === 'ollama' ? 'block' : 'none';
+            if (sdWrap) sdWrap.style.display = v === 'sd_webui' ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const coverCb = document.getElementById('generate_cover');
+            const coverSrc = document.getElementById('cover_source');
+            if (coverCb) coverCb.addEventListener('change', updateCoverOptionsVisibility);
+            if (coverSrc) coverSrc.addEventListener('change', updateCoverOptionsVisibility);
+        });
+
+        function setButtonsLoading(loading) {
+            const btns = ['generateOnlyBtn', 'generateBtn', 'generateAndPublishBtn', 'publishPreviewBtn'];
+            btns.forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                if (loading && (id === 'generateOnlyBtn' || id === 'generateBtn' || id === 'generateAndPublishBtn')) {
+                    btn.disabled = true;
+                } else if (!loading && (id === 'generateOnlyBtn' || id === 'generateBtn' || id === 'generateAndPublishBtn')) {
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        // 标签输入处理
+        const tagInput = document.getElementById('tagInput');
+        const tagsContainer = document.getElementById('tagsContainer');
+        
+        tagInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const tag = tagInput.value.trim();
+                if (tag && !tags.includes(tag)) {
+                    tags.push(tag);
+                    updateTagsDisplay();
+                    tagInput.value = '';
+                }
+            }
+        });
+
+        function updateTagsDisplay() {
+            const existingTags = tagsContainer.querySelectorAll('.tag');
+            existingTags.forEach(tag => tag.remove());
+            
+            tags.forEach(tag => {
+                const tagEl = document.createElement('span');
+                tagEl.className = 'tag';
+                tagEl.innerHTML = `${tag} <span class="tag-remove" data-tag="${tag}">×</span>`;
+                tagsContainer.insertBefore(tagEl, tagInput);
+            });
+        }
+
+        // 使用事件委托处理标签删除
+        tagsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tag-remove')) {
+                const tagToRemove = e.target.getAttribute('data-tag');
+                const index = tags.indexOf(tagToRemove);
+                if (index > -1) {
+                    tags.splice(index, 1);
+                    updateTagsDisplay();
+                }
+            }
+        });
+
+        // 分类输入处理
+        const categoryInput = document.getElementById('categoryInput');
+        const categoriesContainer = document.getElementById('categoriesContainer');
+        
+        categoryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const category = categoryInput.value.trim();
+                if (category && !categories.includes(category)) {
+                    categories.push(category);
+                    updateCategoriesDisplay();
+                    categoryInput.value = '';
+                }
+            }
+        });
+
+        function updateCategoriesDisplay() {
+            const existingCategories = categoriesContainer.querySelectorAll('.tag');
+            existingCategories.forEach(cat => cat.remove());
+            
+            categories.forEach(category => {
+                const catEl = document.createElement('span');
+                catEl.className = 'tag';
+                catEl.innerHTML = `${category} <span class="tag-remove" data-category="${category}">×</span>`;
+                categoriesContainer.insertBefore(catEl, categoryInput);
+            });
+        }
+
+        // 使用事件委托处理分类删除
+        categoriesContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tag-remove')) {
+                const categoryToRemove = e.target.getAttribute('data-category');
+                const index = categories.indexOf(categoryToRemove);
+                if (index > -1) {
+                    categories.splice(index, 1);
+                    updateCategoriesDisplay();
+                }
+            }
+        });
+
+        // 显示结果
+        function showResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'} show`;
+            resultDiv.textContent = message;
+            
+            // 3秒后自动隐藏成功消息
+            if (isSuccess) {
+                setTimeout(() => {
+                    resultDiv.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // 显示预览并更新「发布当前预览」状态
+        function showPreview(title, content) {
+            currentPreview = { title: title, content: content };
+            const preview = document.getElementById('preview');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewContent = document.getElementById('previewContent');
+            const publishBtn = document.getElementById('publishPreviewBtn');
+
+            previewTitle.textContent = title;
+            previewContent.innerHTML = content;
+            preview.classList.add('show');
+            if (publishBtn) publishBtn.disabled = false;
+        }
+
+        // 加载历史列表
+        async function loadHistory() {
+            const listEl = document.getElementById('historyList');
+            if (!listEl) return;
+            try {
+                const res = await fetch('/api/history?limit=20');
+                const data = await res.json();
+                if (!data.success || !data.data) { listEl.innerHTML = '<li class="history-meta">暂无历史</li>'; return; }
+                listEl.innerHTML = data.data.map(item => {
+                    const time = item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '';
+                    const status = item.status === 'published' ? '已发布' : (item.status === 'draft' ? '草稿' : '预览');
+                    return `<li data-id="${item.id}"><span class="history-title">${escapeHtml(item.title || '无标题')}</span><span class="history-meta">${time} · ${status}</span></li>`;
+                }).join('');
+            } catch (e) {
+                listEl.innerHTML = '<li class="history-meta">加载失败</li>';
+            }
+        }
+
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function updateDebugLog(steps = []) {
+            const logContainer = document.getElementById('debugLog');
+            const logContent = document.getElementById('debugLogContent');
+            
+            if (!steps || steps.length === 0) {
+                logContent.textContent = '暂无日志';
+                logContainer.classList.remove('show');
+                return;
+            }
+            
+            logContent.textContent = steps.join('\n');
+            logContainer.classList.add('show');
+        }
+
+        // 仅生成（预览）
+        document.getElementById('generateOnlyBtn').addEventListener('click', async () => {
+            const payload = getPayload();
+            if (!payload.prompt) { showResult('请输入 prompt', false); return; }
+
+            const btn = document.getElementById('generateOnlyBtn');
+            updateDebugLog([]);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>生成中...';
+
+            try {
+                const response = await fetch('/api/generate-only', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const responseText = await response.text();
+                let data;
+                try { data = JSON.parse(responseText); } catch (e) {
+                    showResult('请求失败: 响应格式错误', false);
+                    return;
+                }
+                updateDebugLog(data.steps || []);
+                if (data.success && data.title && data.content) {
+                    showResult(data.message || '已生成，请预览后点击「发布当前预览」', true);
+                    showPreview(data.title, data.content);
+                    if (data.extracted_tags && data.extracted_tags.length) {
+                        data.extracted_tags.forEach(function(t) {
+                            if (t && tags.indexOf(t) === -1) tags.push(t);
+                        });
+                        updateTagsDisplay();
+                    }
+                    if (data.extracted_categories && data.extracted_categories.length) {
+                        data.extracted_categories.forEach(function(c) {
+                            if (c && categories.indexOf(c) === -1) categories.push(c);
+                        });
+                        updateCategoriesDisplay();
+                    }
+                    loadHistory();
+                } else {
+                    showResult(data.error || '生成失败', false);
+                }
+            } catch (error) {
+                showResult('请求失败: ' + error.message, false);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '仅生成（预览）';
+            }
+        });
+
+        // 发布当前预览
+        document.getElementById('publishPreviewBtn').addEventListener('click', async () => {
+            if (!currentPreview || !currentPreview.title || !currentPreview.content) {
+                showResult('请先生成或从历史加载一篇文章', false);
+                return;
+            }
+            const btn = document.getElementById('publishPreviewBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>发布中...';
+            try {
+                const response = await fetch('/api/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: currentPreview.title,
+                        content: currentPreview.content,
+                        tags: tags,
+                        categories: categories,
+                        generate_cover: !!(document.getElementById('generate_cover') && document.getElementById('generate_cover').checked),
+                        cover_source: (document.getElementById('cover_source') && document.getElementById('cover_source').value) || 'ollama',
+                        ollama_url: (document.getElementById('ollama_url') && document.getElementById('ollama_url').value.trim()) || null,
+                        sd_webui_url: (document.getElementById('sd_webui_url') && document.getElementById('sd_webui_url').value.trim()) || null
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showResult('发布成功', true);
+                    loadHistory();
+                } else {
+                    showResult('发布失败: ' + (data.error || ''), false);
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                showResult('请求失败: ' + e.message, false);
+                btn.disabled = false;
+            }
+            btn.innerHTML = '发布当前预览';
+        });
+
+        // 历史列表点击加载到预览
+        document.getElementById('historyList').addEventListener('click', async (e) => {
+            const li = e.target.closest('li[data-id]');
+            if (!li) return;
+            const id = li.getAttribute('data-id');
+            try {
+                const res = await fetch('/api/history/' + id);
+                const data = await res.json();
+                if (data.success && data.title != null) {
+                    showPreview(data.title, data.content || '');
+                    showResult('已加载到预览，可点击「发布当前预览」发布', true);
+                } else {
+                    showResult(data.error || '加载失败', false);
+                }
+            } catch (err) {
+                showResult('加载失败: ' + err.message, false);
+            }
+        });
+
+        // 仅生成文章（保存为草稿）
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const payload = getPayload();
+            if (!payload.prompt) {
+                showResult('请输入 prompt', false);
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            updateDebugLog([]);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>生成并保存中...';
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // 先读取响应文本，然后尝试解析 JSON
+                const responseText = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    // 如果解析失败，说明服务器返回的不是 JSON
+                    const snippet = responseText.substring(0, 200);
+                    showResult(`请求失败: 服务器返回的不是有效JSON数据。响应内容: ${snippet}...`, false);
+                    updateDebugLog([`解析 JSON 失败: ${parseError.message}`, `原始响应: ${snippet}...`]);
+                    return;
+                }
+
+                updateDebugLog(data.steps || []);
+
+                if (data.success) {
+                    showResult(data.message || '文章已生成并保存为草稿到 Halo！', true);
+                    if (data.title && data.content) {
+                        showPreview(data.title, data.content);
+                    }
+                    loadHistory();
+                } else {
+                    // 未认证或其它错误
+                    if (response.status === 401) {
+                        showResult('未认证或会话已过期，请刷新页面重新登录。', false);
+                    } else {
+                        showResult(`生成失败: ${data.error}`, false);
+                        // 即使失败，如果有内容也显示预览
+                        if (data.title && data.content) {
+                            showPreview(data.title, data.content);
+                        }
+                    }
+                }
+            } catch (error) {
+                // 捕获网络错误等其他错误
+                showResult(`请求失败: ${error.message}`, false);
+                updateDebugLog([`网络错误: ${error.message}`]);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '生成并保存为草稿';
+            }
+        });
+
+        // 生成并发布
+        document.getElementById('generateAndPublishBtn').addEventListener('click', async () => {
+            const payload = getPayload();
+            if (!payload.prompt) {
+                showResult('请输入 prompt', false);
+                return;
+            }
+
+            const btn = document.getElementById('generateAndPublishBtn');
+            updateDebugLog([]);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>生成并发布中...';
+
+            try {
+                const response = await fetch('/api/generate-and-publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // 先读取响应文本，然后尝试解析 JSON
+                const responseText = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    // 如果解析失败，说明服务器返回的不是 JSON
+                    const snippet = responseText.substring(0, 200);
+                    showResult(`请求失败: 服务器返回的不是有效JSON数据。响应内容: ${snippet}...`, false);
+                    updateDebugLog([`解析 JSON 失败: ${parseError.message}`, `原始响应: ${snippet}...`]);
+                    return;
+                }
+
+                updateDebugLog(data.steps || []);
+
+                // 无论成功失败，只要有文章内容就显示预览
+                if (data.title && data.content) {
+                    showPreview(data.title, data.content);
+                }
+
+                if (data.success) {
+                    showResult('✅ 文章生成并发布成功！标题: ' + (data.title || ''), true);
+                    loadHistory();
+                } else {
+                    // 如果生成成功但发布失败，提示用户可以手动发布
+                    if (data.title && data.content) {
+                        showResult(`文章已生成但发布失败: ${data.error}。你可以复制内容手动发布。`, false);
+                    } else {
+                        showResult(`发布失败: ${data.error}`, false);
+                    }
+                }
+            } catch (error) {
+                // 捕获网络错误等其他错误
+                showResult(`请求失败: ${error.message}`, false);
+                updateDebugLog([`网络错误: ${error.message}`]);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '生成并发布';
+            }
+        });
+
+        // 草稿箱：拉取列表
+        async function loadDrafts() {
+            const listEl = document.getElementById('draftsList');
+            if (!listEl) return;
+            listEl.innerHTML = '<li class="history-meta">加载中…</li>';
+            try {
+                const res = await fetch('/api/drafts?size=30');
+                const data = await res.json();
+                if (!data.success) {
+                    listEl.innerHTML = '<li class="history-meta">' + (data.error || '加载失败') + '</li>';
+                    return;
+                }
+                const items = data.data || [];
+                if (items.length === 0) {
+                    listEl.innerHTML = '<li class="history-meta">暂无草稿</li>';
+                    return;
+                }
+                listEl.innerHTML = items.map(function(item) {
+                    return '<li data-name="' + escapeHtml(item.name || '') + '"><span class="history-title">' + escapeHtml(item.title || '无标题') + '</span><span class="history-meta">' + escapeHtml(item.slug || '') + '</span></li>';
+                }).join('');
+            } catch (e) {
+                listEl.innerHTML = '<li class="history-meta">加载失败</li>';
+            }
+        }
+
+        document.getElementById('loadDraftsBtn').addEventListener('click', loadDrafts);
+
+        // 草稿箱：点击加载到预览
+        document.getElementById('draftsList').addEventListener('click', async function(e) {
+            const li = e.target.closest('li[data-name]');
+            if (!li) return;
+            const name = li.getAttribute('data-name');
+            if (!name) return;
+            try {
+                const res = await fetch('/api/drafts/' + encodeURIComponent(name));
+                const data = await res.json();
+                if (data.success && data.title != null) {
+                    showPreview(data.title, data.content || '');
+                    showResult('已从草稿箱加载，可点击「发布当前预览」发布', true);
+                } else {
+                    showResult(data.error || '加载失败', false);
+                }
+            } catch (err) {
+                showResult('加载失败: ' + err.message, false);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+        });
+    </script>
+</body>
+</html>
+
