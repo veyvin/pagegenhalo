@@ -147,7 +147,15 @@
             <div class="qr-code">
                 {{if .qr_code_url}}
                 <p>请使用 Google Authenticator 扫描以下二维码：</p>
-                <img src="{{.qr_code_url}}" alt="Google Authenticator QR Code" style="max-width: 200px; border: 1px solid #ddd; padding: 10px; background-color: white;">
+                <div id="qrcode" style="display: inline-block; padding: 10px; background: white; border: 1px solid #ddd;"></div>
+                <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+                <script>
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: "{{.qr_code_url}}",
+                        width: 200,
+                        height: 200
+                    });
+                </script>
                 {{else}}
                 <p>⚠️ 无法显示二维码图片。</p>
                 <p>请手动输入密钥：</p>
