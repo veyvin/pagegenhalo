@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -203,6 +204,8 @@ func (r *Router) apiGenerate(w http.ResponseWriter, req *http.Request) {
 	}
 	json.NewDecoder(req.Body).Decode(&data)
 
+	log.Printf("[apiGenerate] prompt=%s template=%s lang=%s", data.Prompt[:min(50, len(data.Prompt))], data.TemplateID, data.Language)
+
 	if data.Prompt == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "请输入 prompt"})
 		return
@@ -210,9 +213,12 @@ func (r *Router) apiGenerate(w http.ResponseWriter, req *http.Request) {
 
 	title, content, err := r.dsClient.GeneratePost(data.Prompt, data.TemplateID, data.Language)
 	if err != nil {
+		log.Printf("[apiGenerate] GeneratePost error: %v", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": err.Error()})
 		return
 	}
+
+	log.Printf("[apiGenerate] generated title=%s content_len=%d", title, len(content))
 
 	tags, categories := data.Tags, data.Categories
 	if data.AutoExtractTags {
@@ -394,6 +400,8 @@ func (r *Router) apiGenerateAndPublish(w http.ResponseWriter, req *http.Request)
 	}
 	json.NewDecoder(req.Body).Decode(&data)
 
+	log.Printf("[apiGenerateAndPublish] prompt=%s template=%s lang=%s", data.Prompt[:min(50, len(data.Prompt))], data.TemplateID, data.Language)
+
 	if data.Prompt == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "请输入 prompt"})
 		return
@@ -401,9 +409,12 @@ func (r *Router) apiGenerateAndPublish(w http.ResponseWriter, req *http.Request)
 
 	title, content, err := r.dsClient.GeneratePost(data.Prompt, data.TemplateID, data.Language)
 	if err != nil {
+		log.Printf("[apiGenerateAndPublish] GeneratePost error: %v", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": err.Error()})
 		return
 	}
+
+	log.Printf("[apiGenerateAndPublish] generated title=%s, publishing...", title)
 
 	tags, categories := data.Tags, data.Categories
 	if data.AutoExtractTags {

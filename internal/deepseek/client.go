@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -110,6 +111,8 @@ func (c *Client) chat(prompt string, temperature float64, maxTokens int) (string
 		return "", fmt.Errorf("DEEPSEEK_API_KEY not configured")
 	}
 
+	log.Printf("[deepseek] model=%s api_url=%s prompt_len=%d", c.cfg.DEEPSEEK.Model, c.cfg.DEEPSEEK.APIURL, len(prompt))
+
 	reqBody := chatRequest{
 		Model:       c.cfg.DEEPSEEK.Model,
 		Messages:    []message{{Role: "user", Content: prompt}},
@@ -125,22 +128,27 @@ func (c *Client) chat(prompt string, temperature float64, maxTokens int) (string
 
 	resp, err := c.http.Do(req)
 	if err != nil {
+		log.Printf("[deepseek] request failed: %v", err)
 		return "", fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		b, _ := io.ReadAll(resp.Body)
+		log.Printf("[deepseek] API error %d: %s", resp.StatusCode, string(b[:min(200, len(b))]))
 		return "", fmt.Errorf("API error %d: %s", resp.StatusCode, string(b[:min(200, len(b))]))
 	}
 
 	var chatResp chatResponse
 	if err := json.NewDecoder(resp.Body).Decode(&chatResp); err != nil {
+		log.Printf("[deepseek] decode error: %v", err)
 		return "", fmt.Errorf("decode error: %w", err)
 	}
 	if len(chatResp.Choices) == 0 {
 		return "", fmt.Errorf("no choices in response")
 	}
+
+	log.Printf("[deepseek] success, response_len=%d", len(chatResp.Choices[0].Message.Content))
 	return chatResp.Choices[0].Message.Content, nil
 }
 
