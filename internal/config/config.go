@@ -13,8 +13,9 @@ type Config struct {
 }
 
 type DeepSeekConfig struct {
-	APIKey string
-	APIURL string
+	APIKey  string
+	APIURL  string
+	Model   string
 }
 
 type HaloConfig struct {
@@ -43,6 +44,7 @@ func Load() *Config {
 		DEEPSEEK: DeepSeekConfig{
 			APIKey: getEnv("DEEPSEEK_API_KEY", ""),
 			APIURL: getEnv("DEEPSEEK_API_URL", "https://api.deepseek.com/chat/completions"),
+			Model:  getEnv("DEEPSEEK_MODEL", "deepseek-chat"),
 		},
 		Halo: HaloConfig{
 			URL:   getEnv("HALO_URL", "https://veyvin.com"),

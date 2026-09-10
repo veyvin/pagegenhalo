@@ -10,6 +10,7 @@ services:
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
       - DEEPSEEK_API_URL=${DEEPSEEK_API_URL:-https://api.deepseek.com/chat/completions}
+      - DEEPSEEK_MODEL=${DEEPSEEK_MODEL:-deepseek-chat}
       - HALO_URL=${HALO_URL:-https://veyvin.com}
       - HALO_TOKEN=${HALO_TOKEN}
       - GOOGLE_AUTH_SECRET=${GOOGLE_AUTH_SECRET}
@@ -17,7 +18,7 @@ services:
       - COVER_IMAGE_BACKEND=${COVER_IMAGE_BACKEND:-ollama}
       - COVER_WEB_ENGINE=${COVER_WEB_ENGINE:-bing_cn}
       - OLLAMA_URL=${OLLAMA_URL:-http://localhost:11434}
-      - OLLAMA_IMAGE_MODEL=${OLLAMA_IMAGE_MODEL:-x/z-image-turbo}
+      - OLLAMA_IMAGE_MODEL=${OLLAMA_IMAGE_MODEL:-x/z-image-trobo}
       - SD_WEBUI_URL=${SD_WEBUI_URL:-http://localhost:7860}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5555/health"]

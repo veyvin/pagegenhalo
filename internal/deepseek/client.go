@@ -111,7 +111,7 @@ func (c *Client) chat(prompt string, temperature float64, maxTokens int) (string
 	}
 
 	reqBody := chatRequest{
-		Model:       "deepseek-chat",
+		Model:       c.cfg.DEEPSEEK.Model,
 		Messages:    []message{{Role: "user", Content: prompt}},
 		Temperature: temperature,
 		MaxTokens:   maxTokens,
