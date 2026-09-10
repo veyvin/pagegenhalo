@@ -1,7 +1,0 @@
-flask
-requests
-beautifulsoup4
-python-dotenv
-pyotp
-qrcode[pil]
-duckduckgo-search

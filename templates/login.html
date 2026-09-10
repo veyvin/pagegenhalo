@@ -37,7 +37,7 @@
             color: #555;
             font-weight: 500;
         }
-        input[type="text"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -69,10 +69,10 @@
         }
         .admin-info {
             background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 20px;
-            font-size: 14px;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #28a745;
         }
         .admin-info h3 {
             margin-top: 0;
@@ -99,13 +99,6 @@
             border-radius: 3px;
             font-family: 'Courier New', monospace;
         }
-        .admin-info {
-            background-color: #e9ecef;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-            border-left: 4px solid #28a745;
-        }
         @media (max-width: 480px) {
             body { padding: 15px; min-height: 100dvh; }
             .login-container { padding: 24px 20px; margin: 10px; }
@@ -113,39 +106,17 @@
             input[type="text"], button { min-height: 48px; }
         }
     </style>
-    <script>
-        // 限制输入框只能输入数字
-        document.addEventListener('DOMContentLoaded', function() {
-            const tokenInput = document.getElementById('token');
-            if (tokenInput) {
-                tokenInput.addEventListener('input', function(e) {
-                    // 只允许数字
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                });
-            }
-        });
-    </script>
 </head>
 <body>
     <div class="login-container">
         <h1>Google Authenticator 验证</h1>
         
-        {% if error %}
+        {{if .error}}
         <div class="error-message">
-            {{ error }}
-            <div style="margin-top: 10px; font-size: 14px; padding: 10px; background: #fff3cd; border-radius: 4px; border: 1px solid #ffeaa7;">
-                <strong>可能的解决方案：</strong>
-                <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-                    <li>确保您的手机和服务器时间同步准确</li>
-                    <li>输入最新生成的验证码（每30秒更新一次）</li>
-                    <li>检查 Google Authenticator 是否使用了正确的密钥</li>
-                    <li>尝试输入当前时间前后30秒内的验证码</li>
-                </ul>
-            </div>
+            {{.error}}
         </div>
-        {% endif %}
+        {{end}}
         
-        <!-- 常规登录表单 -->
         <form method="POST">
             <div class="form-group">
                 <label for="token">请输入 Google Authenticator 验证码：</label>
@@ -154,18 +125,10 @@
             <button type="submit">验证并登录</button>
         </form>
         
-        <!-- 预验证表单，用于显示配置信息 -->
-        {% if not show_config %}
+        {{if not .show_config}}
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <h3 style="margin-bottom: 15px; font-size: 16px; color: #555;">需要配置 Google Authenticator？</h3>
             <p style="margin-bottom: 15px; font-size: 14px; color: #666;">输入管理员密码以查看配置信息：</p>
-            
-            {% if preverify_error %}
-            <div class="error-message">
-                {{ preverify_error }}
-            </div>
-            {% endif %}
-            
             <form method="POST">
                 <div class="form-group">
                     <label for="show_config_password">管理员密码：</label>
@@ -174,34 +137,29 @@
                 <button type="submit" style="background-color: #6c757d;">显示配置信息</button>
             </form>
         </div>
-        {% endif %}
+        {{end}}
         
-        {% if show_config %}
-        <!-- 管理员配置信息，只有输入正确密码后才显示 -->
+        {{if .show_config}}
         <div class="admin-info">
             <h3>Google Authenticator 配置信息</h3>
             <p style="color: #dc3545; font-weight: bold; margin-top: 10px;">⚠️ 请妥善保管此信息，不要分享给他人！⚠️</p>
             <p>请使用以下信息配置 Google Authenticator：</p>
             <div class="qr-code">
-                {% if qr_code_data %}
+                {{if .qr_code_url}}
                 <p>请使用 Google Authenticator 扫描以下二维码：</p>
-                <img src="{{ qr_code_data }}" alt="Google Authenticator QR Code" style="max-width: 200px; border: 1px solid #ddd; padding: 10px; background-color: white;">
-                {% else %}
-                <p>⚠️ 未安装 qrcode 库，无法显示二维码图片。</p>
-                <p>请安装：<code>pip install qrcode[pil]</code></p>
-                <p>或者手动输入密钥：</p>
-                {% endif %}
+                <img src="{{.qr_code_url}}" alt="Google Authenticator QR Code" style="max-width: 200px; border: 1px solid #ddd; padding: 10px; background-color: white;">
+                {{else}}
+                <p>⚠️ 无法显示二维码图片。</p>
+                <p>请手动输入密钥：</p>
+                {{end}}
                 <p style="margin-top: 15px;">密钥（手动输入时使用）：</p>
-                <p style="word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 4px;"><strong>{{ secret }}</strong></p>
-                <p style="font-size: 12px; color: #666; margin-top: 10px;">二维码 URL：<code style="font-size: 11px; word-break: break-all;">{{ qr_code_url }}</code></p>
+                <p style="word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 4px;"><strong>{{.secret}}</strong></p>
             </div>
-            
-            <!-- 隐藏配置信息按钮 -->
-            <a href="{{ url_for('auth.hide_config') }}" style="display: inline-block; margin-top: 20px; padding: 8px 16px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px;">
+            <a href="/hide-config" style="display: inline-block; margin-top: 20px; padding: 8px 16px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px;">
                 隐藏配置信息
             </a>
         </div>
-        {% endif %}
+        {{end}}
     </div>
 </body>
 </html>
