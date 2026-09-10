@@ -2,27 +2,47 @@ version: '3.8'
 
 services:
   pagegen:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: pagegen:go
+    image: veyvin/pagegen:latest
     container_name: pagegen
     restart: unless-stopped
     ports:
-      - "${PORT:-5555}:5555"
-    env_file:
-      - .env
+      - "5555:5555"
     environment:
       - PORT=5555
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_API_URL=${DEEPSEEK_API_URL:-https://api.deepseek.com/chat/completions}
+      - HALO_URL=${HALO_URL:-https://veyvin.com}
+      - HALO_TOKEN=${HALO_TOKEN}
+      - GOOGLE_AUTH_SECRET=${GOOGLE_AUTH_SECRET}
+      - CONFIG_PREVIEW_PASSWORD=${CONFIG_PREVIEW_PASSWORD:-admin123}
+      - COVER_IMAGE_BACKEND=${COVER_IMAGE_BACKEND:-ollama}
+      - COVER_WEB_ENGINE=${COVER_WEB_ENGINE:-bing_cn}
+      - OLLAMA_URL=${OLLAMA_URL:-http://localhost:11434}
+      - OLLAMA_IMAGE_MODEL=${OLLAMA_IMAGE_MODEL:-x/z-image-turbo}
+      - SD_WEBUI_URL=${SD_WEBUI_URL:-http://localhost:7860}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5555/health"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 20s
-    networks:
-      - pagegen-network
 
-networks:
-  pagegen-network:
-    driver: bridge
+# 使用方法:
+# 1. 直接运行（使用默认值）:
+#    docker compose up -d
+#
+# 2. 使用环境变量配置:
+#    DEEPSEEK_API_KEY=xxx HALO_TOKEN=xxx docker compose up -d
+#
+# 3. 创建 .env 文件配置:
+#    cp .env.example .env
+#    编辑 .env 填入你的配置
+#    docker compose up -d
+#
+# 4. 使用 docker run:
+#    docker run -d -p 5555:5555 \
+#      -e DEEPSEEK_API_KEY=xxx \
+#      -e HALO_TOKEN=xxx \
+#      -e GOOGLE_AUTH_SECRET=xxx \
+#      veyvin/pagegen:latest
