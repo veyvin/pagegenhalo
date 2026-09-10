@@ -480,7 +480,7 @@ func (c *Client) jsonStr(v interface{}) string {
 
 func generateSlug(title string) string {
 	slug := strings.ToLower(title)
-	re := regexp.MustCompile(`[^a-z0-9\-_\u4e00-\u9fa5]`)
+	re := regexp.MustCompile(`[^a-z0-9\-_]`)
 	slug = re.ReplaceAllString(slug, "-")
 	re = regexp.MustCompile(`-+`)
 	slug = re.ReplaceAllString(slug, "-")
@@ -496,7 +496,7 @@ func generateSlug(title string) string {
 
 func toSlug(s string) string {
 	s = strings.ToLower(s)
-	re := regexp.MustCompile(`[^a-z0-9\-_\u4e00-\u9fa5]`)
+	re := regexp.MustCompile(`[^a-z0-9\-_]`)
 	s = re.ReplaceAllString(s, "-")
 	re = regexp.MustCompile(`-+`)
 	s = re.ReplaceAllString(s, "-")
