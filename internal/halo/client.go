@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -42,6 +43,8 @@ func (c *Client) Publish(title, content string, tags, categories []string, publi
 	if c.cfg.Halo.Token == "" {
 		return nil, fmt.Errorf("HALO_TOKEN not configured")
 	}
+
+	log.Printf("[halo] Publish title=%s tags=%v categories=%v", title, tags, categories)
 
 	slug := generateSlug(title)
 	catIDs, tagIDs := c.resolveCategoriesAndTags(categories, tags)
@@ -92,12 +95,14 @@ func (c *Client) Publish(title, content string, tags, categories []string, publi
 
 	resp, err := c.post("/apis/uc.api.content.halo.run/v1alpha1/posts", payload)
 	if err != nil {
+		log.Printf("[halo] uc.api fallback due to: %v", err)
 		resp, err = c.post("/apis/api.console.halo.run/v1alpha1/posts", map[string]interface{}{
 			"content": contentJSON,
 			"post":    payload,
 		})
 	}
 	if err != nil {
+		log.Printf("[halo] Publish failed: %v", err)
 		return nil, err
 	}
 
@@ -386,23 +391,27 @@ func (c *Client) ListSinglePages(page, size int) ([]interface{}, error) {
 
 func (c *Client) post(path string, payload interface{}) (map[string]interface{}, error) {
 	body, _ := json.Marshal(payload)
+	log.Printf("[halo] POST %s body_len=%d", c.cfg.Halo.URL+path, len(body))
 	req, _ := http.NewRequest("POST", c.cfg.Halo.URL+path, bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.cfg.Halo.Token)
 
 	resp, err := c.http.Do(req)
 	if err != nil {
+		log.Printf("[halo] POST %s failed: %v", path, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
 		b, _ := io.ReadAll(resp.Body)
+		log.Printf("[halo] POST %s error %d: %s", path, resp.StatusCode, string(b[:min(500, len(b))]))
 		return nil, fmt.Errorf("error %d: %s", resp.StatusCode, string(b[:min(200, len(b))]))
 	}
 
 	var result map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&result)
+	log.Printf("[halo] POST %s success", path)
 	return result, nil
 }
 
