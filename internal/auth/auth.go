@@ -21,7 +21,7 @@ func VerifyOTP(token, secret string) bool {
 	if len(token) != 6 {
 		return false
 	}
-	return totp.Validate(secret, token)
+	return totp.Validate(token, secret)
 }
 
 func GenerateQRCodeURL(secret string) string {
