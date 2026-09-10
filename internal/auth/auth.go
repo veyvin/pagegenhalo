@@ -4,9 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
-	"net/url"
 
-	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
 
@@ -19,21 +17,17 @@ func GetOrCreateSecret(configured string) string {
 	return secret
 }
 
-func VerifyOTP(token, secret string, window int) bool {
+func VerifyOTP(token, secret string) bool {
 	if len(token) != 6 {
 		return false
 	}
-	key, err := otp.NewKeyFromURL(fmt.Sprintf("otpauth://totp/pagegen:admin?secret=%s&issuer=pagegen", secret))
-	if err != nil {
-		return false
-	}
-	return totp.Validate(key.Secret(), token)
+	return totp.Validate(secret, token)
 }
 
 func GenerateQRCodeURL(secret string) string {
 	return fmt.Sprintf(
-		"otpauth://totp/OnDayGitHub:%s?secret=%s&issuer=OnDayGitHub",
-		url.PathEscape("admin"), secret,
+		"otpauth://totp/PageGen:admin?secret=%s&issuer=PageGen",
+		secret,
 	)
 }
 

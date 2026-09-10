@@ -140,7 +140,7 @@ func (r *Router) loginPost(w http.ResponseWriter, req *http.Request) {
 	token := req.Form.Get("token")
 	if token != "" {
 		secret := auth.GetOrCreateSecret(r.cfg.Auth.GoogleAuthSecret)
-		if auth.VerifyOTP(token, secret, 2) {
+		if auth.VerifyOTP(token, secret) {
 			sess.Data["authenticated"] = true
 			r.store.Save(w, req, "session", sess)
 			http.Redirect(w, req, "/", http.StatusFound)
