@@ -302,6 +302,88 @@ func (c *Client) publishPost(name string) (map[string]interface{}, error) {
 	return nil, fmt.Errorf("publish failed")
 }
 
+func (c *Client) PublishSinglePage(title, content string, slug string, publish bool) (map[string]interface{}, error) {
+	if c.cfg.Halo.Token == "" {
+		return nil, fmt.Errorf("HALO_TOKEN not configured")
+	}
+
+	if slug == "" {
+		slug = generateSlug(title)
+	}
+
+	contentJSON := map[string]interface{}{
+		"content": content,
+		"raw":     content,
+		"rawType": "HTML",
+	}
+
+	payload := map[string]interface{}{
+		"page": map[string]interface{}{
+			"apiVersion": "content.halo.run/v1alpha1",
+			"kind":       "SinglePage",
+			"metadata":   map[string]interface{}{"generateName": "page-"},
+			"spec": map[string]interface{}{
+				"title":        title,
+				"slug":         slug,
+				"template":     "",
+				"cover":        "",
+				"deleted":      false,
+				"publish":      false,
+				"publishTime":  "",
+				"pinned":       false,
+				"allowComment": true,
+				"visible":      "PUBLIC",
+				"priority":     0,
+				"excerpt":      map[string]interface{}{"autoGenerate": true, "raw": ""},
+				"htmlMetas":    []interface{}{},
+			},
+		},
+		"content": contentJSON,
+	}
+
+	resp, err := c.post("/apis/api.console.halo.run/v1alpha1/singlepages", payload)
+	if err != nil {
+		return nil, err
+	}
+
+	pageName := c.extractName(resp)
+	if pageName == "" {
+		return nil, fmt.Errorf("no name in response")
+	}
+
+	if publish {
+		_, err := c.publishSinglePage(pageName)
+		if err != nil {
+			return resp, fmt.Errorf("draft saved but publish failed: %w", err)
+		}
+	}
+
+	return resp, nil
+}
+
+func (c *Client) publishSinglePage(name string) (map[string]interface{}, error) {
+	endpoints := []string{
+		fmt.Sprintf("/apis/api.console.halo.run/v1alpha1/singlepages/%s/publish", name),
+	}
+	for _, ep := range endpoints {
+		resp, err := c.put(ep, nil)
+		if err == nil {
+			return resp, nil
+		}
+	}
+	return nil, fmt.Errorf("publish single page failed")
+}
+
+func (c *Client) ListSinglePages(page, size int) ([]interface{}, error) {
+	url := fmt.Sprintf("/apis/api.console.halo.run/v1alpha1/singlepages?page=%d&size=%d", page, min(size, 50))
+	resp, err := c.get(url)
+	if err != nil {
+		return nil, err
+	}
+	items, _ := resp["items"].([]interface{})
+	return items, nil
+}
+
 func (c *Client) post(path string, payload interface{}) (map[string]interface{}, error) {
 	body, _ := json.Marshal(payload)
 	req, _ := http.NewRequest("POST", c.cfg.Halo.URL+path, bytes.NewReader(body))

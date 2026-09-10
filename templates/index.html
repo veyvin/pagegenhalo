@@ -4,221 +4,182 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halo 文章发布工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { -webkit-text-size-adjust: 100%; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #111;
+            --border: #333;
+            --text-primary: #fff;
+            --text-secondary: #aaa;
+            --text-muted: #666;
+            --accent-blue: #00d4ff;
+            --accent-purple: #7c3aed;
+            --accent-pink: #f472b6;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
+        body { background: var(--bg-primary); min-height: 100vh; font-family: 'Inter', -apple-system, sans-serif; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); }
+        .btn-gradient { 
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
         }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+        .btn-gradient:hover { opacity: 0.9; }
+        .input-field { 
+            background: var(--bg-tertiary); 
+            border: 1px solid var(--border); 
+            color: var(--text-primary);
         }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .header p { opacity: 0.9; font-size: 1.1em; }
-        .content { padding: 40px; }
-        .form-group { margin-bottom: 25px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 1.1em; }
-        textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            resize: vertical;
-            transition: border-color 0.3s;
-        }
-        textarea:focus { outline: none; border-color: #667eea; }
-        .options { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 25px; }
-        .option-group { flex: 1; min-width: 200px; }
-        .option-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .option-group input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
-        .tags-input {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            min-height: 50px;
-        }
-        .tag {
-            background: #667eea;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tag-remove { cursor: pointer; font-weight: bold; }
-        .tag-input { border: none; outline: none; flex: 1; min-width: 100px; font-size: 14px; }
-        .button-group { display: flex; gap: 15px; margin-top: 30px; }
-        button {
-            flex: 1;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4); }
-        .btn-secondary { background: #f0f0f0; color: #333; }
-        .btn-secondary:hover:not(:disabled) { background: #e0e0e0; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .result { margin-top: 30px; padding: 20px; border-radius: 8px; display: none; }
-        .result.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .result.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .result.show { display: block; }
-        .preview { margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0; display: none; }
-        .preview.show { display: block; }
-        .preview h3 { margin-bottom: 15px; color: #333; }
-        .preview-content { background: white; padding: 20px; border-radius: 8px; max-height: 500px; overflow-y: auto; }
-        .preview-title { font-size: 1.5em; font-weight: bold; margin-bottom: 15px; color: #667eea; }
-        .help-text { font-size: 0.9em; color: #666; margin-top: 5px; }
-        .example-prompt { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #667eea; }
-        .example-prompt h4 { margin-bottom: 10px; color: #333; }
-        .example-prompt code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
-        .debug-log { margin-top: 30px; padding: 20px; background: #1e1e1e; color: #e0e0e0; border-radius: 8px; border: 1px solid #333; display: none; }
-        .debug-log.show { display: block; }
-        .debug-log h3 { margin-bottom: 10px; color: #fff; }
-        .debug-log pre { max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; font-family: 'Fira Code', monospace; font-size: 13px; margin: 0; }
-        .history-list { list-style: none; padding: 0; margin: 0; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0; max-height: 280px; overflow-y: auto; }
-        .history-list li { padding: 12px 16px; border-bottom: 1px solid #e9ecef; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
-        .history-list li:last-child { border-bottom: none; }
-        .history-list li:hover { background: #e9ecef; }
-        .history-list .history-title { font-weight: 500; color: #333; }
-        .history-list .history-meta { font-size: 12px; color: #666; }
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .header h1 { font-size: 1.6em; }
-            .content { padding: 20px; }
-            .option-group { min-width: 100%; }
-            .button-group { flex-direction: column; }
-            button { min-height: 48px; }
-        }
+        .input-field:focus { border-color: var(--accent-blue); outline: none; }
+        .input-field::placeholder { color: var(--text-muted); }
+        .tag { background: var(--accent-purple); }
+        .history-item { border-bottom: 1px solid var(--border); }
+        .history-item:hover { background: var(--bg-tertiary); }
+        .preview-content h2 { font-size: 1.5rem; font-weight: bold; margin: 1.5rem 0 1rem; color: var(--accent-pink); }
+        .preview-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.75rem; color: var(--accent-blue); }
+        .preview-content p { margin: 0.75rem 0; line-height: 1.75; color: var(--text-secondary); }
+        .preview-content pre { background: #0a0a0a; color: #e0e0e0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border); }
+        .preview-content code { background: #222; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; }
+        .preview-content pre code { background: transparent; padding: 0; }
+        .preview-content blockquote { border-left: 3px solid var(--accent-purple); padding-left: 1rem; margin: 1rem 0; color: var(--text-muted); }
+        .preview-content ul, .preview-content ol { margin: 0.75rem 0; padding-left: 1.5rem; color: var(--text-secondary); }
+        .preview-content li { margin: 0.375rem 0; }
+        .loading { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .glow { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1>🚀 Halo 文章发布工具</h1>
-                    <p>使用 DeepSeek API 生成文章并发布到 Halo</p>
-                </div>
-                <a href="/logout" style="color: white; text-decoration: none; padding: 10px 20px; background: rgba(255, 255, 255, 0.2); border-radius: 8px;">登出</a>
-            </div>
-        </div>
-        
-        <div class="content">
-            <form id="articleForm">
-                <div class="form-group">
-                    <label for="prompt">文章 Prompt</label>
-                    <textarea id="prompt" name="prompt" placeholder="请输入你想要生成的文章的 prompt" required></textarea>
-                    <div class="help-text">💡 提示：你可以描述文章的主题、内容要求、风格等。</div>
-                </div>
-
-                <div class="options">
-                    <div class="option-group">
-                        <label>
-                            <input type="checkbox" id="use_template" checked>
-                            <span>使用格式模板</span>
-                        </label>
+<body class="p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="card rounded-xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+                            <span>🚀</span> Halo 文章发布工具
+                        </h1>
+                        <p class="text-white/70 mt-2 text-sm">使用 DeepSeek API 智能生成文章并一键发布</p>
                     </div>
-                    <div class="option-group">
-                        <label for="template_id">写作风格</label>
-                        <select id="template_id" style="padding: 8px 12px; border-radius: 6px; border: 2px solid #e0e0e0;">
-                            {{range .template_options}}
-                            <option value="{{.id}}">{{.label}}</option>
-                            {{end}}
-                        </select>
-                    </div>
-                    <div class="option-group">
-                        <label for="language">输出语言</label>
-                        <select id="language" style="padding: 8px 12px; border-radius: 6px; border: 2px solid #e0e0e0;">
-                            <option value="zh">中文</option>
-                            <option value="en">English</option>
-                        </select>
-                    </div>
-                    <div class="option-group">
-                        <label>
-                            <input type="checkbox" id="auto_extract_tags">
-                            <span>自动提取标签与分类</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>标签（可选）</label>
-                    <div class="tags-input" id="tagsContainer">
-                        <input type="text" class="tag-input" id="tagInput" placeholder="输入标签后按回车添加">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>分类（可选）</label>
-                    <div class="tags-input" id="categoriesContainer">
-                        <input type="text" class="tag-input" id="categoryInput" placeholder="输入分类后按回车添加">
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button type="button" class="btn-secondary" id="generateOnlyBtn">仅生成（预览）</button>
-                    <button type="button" class="btn-secondary" id="generateBtn">生成并保存为草稿</button>
-                    <button type="button" class="btn-primary" id="generateAndPublishBtn">生成并发布</button>
-                </div>
-            </form>
-
-            <div id="result" class="result"></div>
-
-            <div id="preview" class="preview">
-                <h3>文章预览</h3>
-                <div class="preview-actions" style="margin-bottom: 12px;">
-                    <button type="button" class="btn-primary" id="publishPreviewBtn" disabled style="flex: none;">发布当前预览</button>
-                </div>
-                <div class="preview-content">
-                    <div class="preview-title" id="previewTitle"></div>
-                    <div id="previewContent"></div>
+                    <a href="/logout" class="px-4 py-2 bg-black/20 hover:bg-black/30 text-white rounded-lg transition-colors text-sm">
+                        登出
+                    </a>
                 </div>
             </div>
 
-            <div class="form-group" style="margin-top: 30px;">
-                <label>历史生成</label>
-                <ul id="historyList" class="history-list"></ul>
+            <div class="p-6">
+                <form id="articleForm" class="space-y-5">
+                    <!-- Prompt Input -->
+                    <div>
+                        <label class="block text-cyan-400 text-sm font-mono font-semibold mb-2 tracking-wider">PROMPT</label>
+                        <textarea id="prompt" rows="4" 
+                            class="input-field w-full px-4 py-3 rounded-lg font-mono text-sm resize-none"
+                            placeholder="请为今天的 GitHub Trending 写一篇技术博客..."></textarea>
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-[#111] border border-[#333]">
+                            <input type="checkbox" id="use_template" checked class="w-4 h-4 accent-cyan-400 cursor-pointer">
+                            <label for="use_template" class="text-[#aaa] text-sm cursor-pointer">使用模板</label>
+                        </div>
+                        <div class="p-3 rounded-lg bg-[#111] border border-[#333]">
+                            <label for="template_id" class="text-[#666] text-xs block mb-1">风格</label>
+                            <select id="template_id" class="w-full bg-transparent text-[#aaa] text-sm border-none outline-none">
+                                {{range .template_options}}
+                                <option value="{{.id}}">{{.label}}</option>
+                                {{end}}
+                            </select>
+                        </div>
+                        <div class="p-3 rounded-lg bg-[#111] border border-[#333]">
+                            <label for="language" class="text-[#666] text-xs block mb-1">语言</label>
+                            <select id="language" class="w-full bg-transparent text-[#aaa] text-sm border-none outline-none">
+                                <option value="zh">🇨🇳 中文</option>
+                                <option value="en">🇺🇸 English</option>
+                            </select>
+                        </div>
+                        <div class="p-3 rounded-lg bg-[#111] border border-[#333]">
+                            <label for="content_type" class="text-[#666] text-xs block mb-1">类型</label>
+                            <select id="content_type" class="w-full bg-transparent text-[#aaa] text-sm border-none outline-none">
+                                <option value="post">📝 文章</option>
+                                <option value="page">📄 文档</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tags & Categories (only for posts) -->
+                    <div id="tags-section" class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-purple-400 text-sm font-mono font-semibold mb-2 tracking-wider">TAGS</label>
+                            <div class="flex flex-wrap gap-2 p-3 rounded-lg bg-[#111] border border-[#333] min-h-[48px] focus-within:border-purple-500" id="tagsContainer">
+                                <input type="text" id="tagInput" 
+                                    class="flex-1 min-w-[80px] bg-transparent text-[#aaa] text-sm border-none outline-none"
+                                    placeholder="+ 添加标签">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-pink-400 text-sm font-mono font-semibold mb-2 tracking-wider">CATEGORIES</label>
+                            <div class="flex flex-wrap gap-2 p-3 rounded-lg bg-[#111] border border-[#333] min-h-[48px] focus-within:border-pink-500" id="categoriesContainer">
+                                <input type="text" id="categoryInput" 
+                                    class="flex-1 min-w-[80px] bg-transparent text-[#aaa] text-sm border-none outline-none"
+                                    placeholder="+ 添加分类">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slug (only for pages) -->
+                    <div id="slug-section" class="hidden">
+                        <label class="block text-cyan-400 text-sm font-mono font-semibold mb-2 tracking-wider">SLUG</label>
+                        <input type="text" id="page_slug" 
+                            class="input-field w-full px-4 py-3 rounded-lg font-mono text-sm"
+                            placeholder="可选，默认自动生成">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button type="button" id="generateOnlyBtn" 
+                            class="flex-1 px-6 py-3 bg-[#222] hover:bg-[#333] text-[#aaa] font-medium rounded-lg transition-all border border-[#444]">
+                            👁️ 仅预览
+                        </button>
+                        <button type="button" id="generateBtn" 
+                            class="flex-1 px-6 py-3 bg-[#222] hover:bg-[#333] text-[#aaa] font-medium rounded-lg transition-all border border-[#444]">
+                            💾 保存草稿
+                        </button>
+                        <button type="button" id="generateAndPublishBtn" 
+                            class="flex-1 px-6 py-3 btn-gradient text-white font-semibold rounded-lg transition-all">
+                            🚀 生成并发布
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Result Message -->
+                <div id="result" class="hidden mt-5 p-4 rounded-lg fade-in"></div>
+
+                <!-- Preview Section -->
+                <div id="preview" class="hidden mt-6 p-5 rounded-lg bg-[#111] border border-[#333] fade-in">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <span class="text-cyan-400">📄</span> 文章预览
+                        </h3>
+                        <button type="button" id="publishPreviewBtn" 
+                            class="px-4 py-2 btn-gradient text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            发布
+                        </button>
+                    </div>
+                    <div class="bg-[#0a0a0a] p-5 rounded-lg border border-[#222] max-h-[500px] overflow-y-auto">
+                        <div id="previewTitle" class="text-xl font-bold text-pink-400 mb-4"></div>
+                        <div id="previewContent" class="preview-content text-[#aaa] text-sm"></div>
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                <div class="mt-6">
+                    <h3 class="text-sm font-mono font-semibold text-[#666] tracking-wider mb-3">HISTORY</h3>
+                    <div id="historyList" class="rounded-lg bg-[#111] border border-[#333] max-h-[250px] overflow-y-auto">
+                        <div class="p-4 text-center text-[#555] text-sm">加载中...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -229,29 +190,49 @@
         let currentPreview = { title: null, content: null };
 
         function getPayload() {
-            return {
+            const contentType = document.getElementById('content_type').value;
+            const payload = {
                 prompt: document.getElementById('prompt').value.trim(),
                 use_template: document.getElementById('use_template').checked,
                 template_id: document.getElementById('template_id').value,
                 language: document.getElementById('language').value,
-                auto_extract_tags: document.getElementById('auto_extract_tags').checked,
-                tags: tags,
-                categories: categories
+                content_type: contentType
             };
+            if (contentType === 'post') {
+                payload.auto_extract_tags = document.getElementById('auto_extract_tags')?.checked || false;
+                payload.tags = tags;
+                payload.categories = categories;
+            } else {
+                payload.slug = document.getElementById('page_slug').value.trim();
+            }
+            return payload;
         }
 
+        function isPageMode() {
+            return document.getElementById('content_type').value === 'page';
+        }
+
+        function toggleContentType() {
+            const isPage = isPageMode();
+            document.getElementById('tags-section').classList.toggle('hidden', isPage);
+            document.getElementById('slug-section').classList.toggle('hidden', !isPage);
+        }
+
+        document.getElementById('content_type').addEventListener('change', toggleContentType);
+
         function showResult(message, isSuccess = true) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.className = 'result ' + (isSuccess ? 'success' : 'error') + ' show';
-            resultDiv.textContent = message;
-            if (isSuccess) setTimeout(() => resultDiv.classList.remove('show'), 3000);
+            const el = document.getElementById('result');
+            el.className = `mt-5 p-4 rounded-lg fade-in ${isSuccess ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-800' : 'bg-red-900/30 text-red-400 border border-red-800'}`;
+            el.textContent = message;
+            el.classList.remove('hidden');
+            if (isSuccess) setTimeout(() => el.classList.add('hidden'), 3000);
         }
 
         function showPreview(title, content) {
             currentPreview = { title, content };
             document.getElementById('previewTitle').textContent = title;
             document.getElementById('previewContent').innerHTML = content;
-            document.getElementById('preview').classList.add('show');
+            document.getElementById('preview').classList.remove('hidden');
             document.getElementById('publishPreviewBtn').disabled = false;
         }
 
@@ -262,145 +243,133 @@
         }
 
         async function loadHistory() {
-            const listEl = document.getElementById('historyList');
+            const el = document.getElementById('historyList');
             try {
                 const res = await fetch('/api/history?limit=20');
                 const data = await res.json();
-                if (!data.success || !data.data) { listEl.innerHTML = '<li class="history-meta">暂无历史</li>'; return; }
-                listEl.innerHTML = data.data.map(item => {
+                if (!data.success || !data.data?.length) {
+                    el.innerHTML = '<div class="p-4 text-center text-[#555] text-sm">暂无历史记录</div>';
+                    return;
+                }
+                el.innerHTML = data.data.map(item => {
                     const time = item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '';
-                    return '<li data-id="' + item.id + '"><span class="history-title">' + escapeHtml(item.title || '无标题') + '</span><span class="history-meta">' + time + '</span></li>';
+                    return `<div class="history-item flex justify-between items-center p-4 cursor-pointer" data-id="${item.id}">
+                        <span class="text-[#ddd] text-sm font-medium">${escapeHtml(item.title || '无标题')}</span>
+                        <span class="text-[#555] text-xs">${time}</span>
+                    </div>`;
                 }).join('');
             } catch (e) {
-                listEl.innerHTML = '<li class="history-meta">加载失败</li>';
+                el.innerHTML = '<div class="p-4 text-center text-red-500 text-sm">加载失败</div>';
             }
         }
 
-        document.getElementById('generateOnlyBtn').addEventListener('click', async () => {
+        async function apiCall(url, payload, btn, btnText) {
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="loading inline-block w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>生成中...';
+            try {
+                const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                return await res.json();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = btnText;
+            }
+        }
+
+        document.getElementById('generateOnlyBtn').addEventListener('click', async (e) => {
             const payload = getPayload();
             if (!payload.prompt) { showResult('请输入 prompt', false); return; }
-            const btn = document.getElementById('generateOnlyBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span>生成中...';
-            try {
-                const res = await fetch('/api/generate-only', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const data = await res.json();
-                if (data.success && data.title && data.content) {
-                    showResult(data.message || '已生成', true);
-                    showPreview(data.title, data.content);
-                    loadHistory();
-                } else {
-                    showResult(data.error || '生成失败', false);
-                }
-            } catch (e) { showResult('请求失败: ' + e.message, false); }
-            finally { btn.disabled = false; btn.innerHTML = '仅生成（预览）'; }
+            const data = await apiCall('/api/generate-only', payload, e.target, '👁️ 仅预览');
+            if (data.success && data.title && data.content) { showResult(data.message || '已生成', true); showPreview(data.title, data.content); loadHistory(); }
+            else showResult(data.error || '生成失败', false);
         });
 
-        document.getElementById('generateBtn').addEventListener('click', async () => {
+        document.getElementById('generateBtn').addEventListener('click', async (e) => {
             const payload = getPayload();
             if (!payload.prompt) { showResult('请输入 prompt', false); return; }
-            const btn = document.getElementById('generateBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span>生成中...';
-            try {
-                const res = await fetch('/api/generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const data = await res.json();
-                if (data.success) {
-                    showResult(data.message || '已保存为草稿', true);
-                    if (data.title && data.content) showPreview(data.title, data.content);
-                    loadHistory();
-                } else { showResult(data.error || '生成失败', false); }
-            } catch (e) { showResult('请求失败: ' + e.message, false); }
-            finally { btn.disabled = false; btn.innerHTML = '生成并保存为草稿'; }
+            const data = await apiCall('/api/generate', payload, e.target, '💾 保存草稿');
+            if (data.success) { showResult(data.message || '已保存为草稿', true); if (data.title && data.content) showPreview(data.title, data.content); loadHistory(); }
+            else showResult(data.error || '生成失败', false);
         });
 
-        document.getElementById('generateAndPublishBtn').addEventListener('click', async () => {
+        document.getElementById('generateAndPublishBtn').addEventListener('click', async (e) => {
             const payload = getPayload();
             if (!payload.prompt) { showResult('请输入 prompt', false); return; }
-            const btn = document.getElementById('generateAndPublishBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span>生成中...';
-            try {
-                const res = await fetch('/api/generate-and-publish', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const data = await res.json();
-                if (data.title && data.content) showPreview(data.title, data.content);
-                if (data.success) { showResult('发布成功', true); loadHistory(); }
-                else { showResult(data.error || '发布失败', false); }
-            } catch (e) { showResult('请求失败: ' + e.message, false); }
-            finally { btn.disabled = false; btn.innerHTML = '生成并发布'; }
+            const isPage = isPageMode();
+            const url = isPage ? '/api/generate-and-publish-page' : '/api/generate-and-publish';
+            const btnText = isPage ? '🚀 生成并发布文档' : '🚀 生成并发布';
+            const data = await apiCall(url, payload, e.target, btnText);
+            if (data.title && data.content) showPreview(data.title, data.content);
+            if (data.success) { showResult(isPage ? '文档发布成功' : '文章发布成功', true); loadHistory(); }
+            else showResult(data.error || '发布失败', false);
         });
 
-        document.getElementById('publishPreviewBtn').addEventListener('click', async () => {
+        document.getElementById('publishPreviewBtn').addEventListener('click', async (e) => {
             if (!currentPreview.title) { showResult('请先生成文章', false); return; }
-            const btn = document.getElementById('publishPreviewBtn');
-            btn.disabled = true;
+            e.target.disabled = true;
+            const isPage = isPageMode();
+            const url = isPage ? '/api/publish-page' : '/api/publish';
+            const payload = isPage 
+                ? { title: currentPreview.title, content: currentPreview.content, slug: document.getElementById('page_slug').value.trim() }
+                : { title: currentPreview.title, content: currentPreview.content, tags, categories };
             try {
-                const res = await fetch('/api/publish', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ title: currentPreview.title, content: currentPreview.content, tags, categories }) });
+                const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 const data = await res.json();
-                if (data.success) { showResult('发布成功', true); loadHistory(); }
-                else { showResult('发布失败: ' + data.error, false); btn.disabled = false; }
-            } catch (e) { showResult('请求失败', false); btn.disabled = false; }
+                if (data.success) { showResult(isPage ? '文档发布成功' : '文章发布成功', true); loadHistory(); }
+                else showResult('发布失败: ' + data.error, false);
+            } finally { e.target.disabled = false; }
         });
 
         document.getElementById('historyList').addEventListener('click', async (e) => {
-            const li = e.target.closest('li[data-id]');
-            if (!li) return;
+            const item = e.target.closest('[data-id]');
+            if (!item) return;
             try {
-                const res = await fetch('/api/history/' + li.dataset.id);
+                const res = await fetch('/api/history/' + item.dataset.id);
                 const data = await res.json();
                 if (data.success) { showPreview(data.title, data.content || ''); showResult('已加载到预览', true); }
             } catch (e) { showResult('加载失败', false); }
         });
 
-        // Tag input
-        document.getElementById('tagInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const tag = e.target.value.trim();
-                if (tag && !tags.includes(tag)) { tags.push(tag); updateTagsDisplay(); e.target.value = ''; }
-            }
-        });
-        document.getElementById('tagsContainer').addEventListener('click', (e) => {
-            if (e.target.classList.contains('tag-remove')) {
-                const idx = tags.indexOf(e.target.dataset.tag);
-                if (idx > -1) { tags.splice(idx, 1); updateTagsDisplay(); }
-            }
-        });
+        function setupTagInput(inputId, containerId, arr, updateFn) {
+            document.getElementById(inputId).addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = e.target.value.trim();
+                    if (val && !arr.includes(val)) { arr.push(val); updateFn(); e.target.value = ''; }
+                }
+            });
+            document.getElementById(containerId).addEventListener('click', (e) => {
+                if (e.target.classList.contains('tag-remove')) {
+                    const val = e.target.dataset.tag || e.target.dataset.cat;
+                    const idx = arr.indexOf(val);
+                    if (idx > -1) { arr.splice(idx, 1); updateFn(); }
+                }
+            });
+        }
+
         function updateTagsDisplay() {
             const container = document.getElementById('tagsContainer');
             container.querySelectorAll('.tag').forEach(t => t.remove());
             tags.forEach(tag => {
                 const el = document.createElement('span');
-                el.className = 'tag';
-                el.innerHTML = tag + ' <span class="tag-remove" data-tag="' + tag + '">×</span>';
+                el.className = 'tag px-3 py-1 rounded-full text-xs text-white flex items-center gap-1';
+                el.innerHTML = `${tag} <span class="tag-remove cursor-pointer hover:text-red-300" data-tag="${tag}">×</span>`;
                 container.insertBefore(el, document.getElementById('tagInput'));
             });
         }
 
-        // Category input
-        document.getElementById('categoryInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const cat = e.target.value.trim();
-                if (cat && !categories.includes(cat)) { categories.push(cat); updateCategoriesDisplay(); e.target.value = ''; }
-            }
-        });
-        document.getElementById('categoriesContainer').addEventListener('click', (e) => {
-            if (e.target.classList.contains('tag-remove')) {
-                const idx = categories.indexOf(e.target.dataset.cat);
-                if (idx > -1) { categories.splice(idx, 1); updateCategoriesDisplay(); }
-            }
-        });
         function updateCategoriesDisplay() {
             const container = document.getElementById('categoriesContainer');
             container.querySelectorAll('.tag').forEach(t => t.remove());
             categories.forEach(cat => {
                 const el = document.createElement('span');
-                el.className = 'tag';
-                el.innerHTML = cat + ' <span class="tag-remove" data-cat="' + cat + '">×</span>';
+                el.className = 'tag px-3 py-1 rounded-full text-xs text-white flex items-center gap-1';
+                el.innerHTML = `${cat} <span class="tag-remove cursor-pointer hover:text-red-300" data-cat="${cat}">×</span>`;
                 container.insertBefore(el, document.getElementById('categoryInput'));
             });
         }
+
+        setupTagInput('tagInput', 'tagsContainer', tags, updateTagsDisplay);
+        setupTagInput('categoryInput', 'categoriesContainer', categories, updateCategoriesDisplay);
 
         loadHistory();
     </script>

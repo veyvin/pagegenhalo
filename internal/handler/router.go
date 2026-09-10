@@ -54,11 +54,13 @@ func NewRouter(cfg *config.Config, store *session.Store) http.Handler {
 		grp.Post("/api/generate", r.apiGenerate)
 		grp.Post("/api/generate-only", r.apiGenerateOnly)
 		grp.Post("/api/publish", r.apiPublish)
+		grp.Post("/api/publish-page", r.apiPublishPage)
 		grp.Get("/api/drafts", r.apiDrafts)
 		grp.Get("/api/drafts/{name}", r.apiDraftDetail)
 		grp.Get("/api/history", r.apiHistory)
 		grp.Get("/api/history/{id}", r.apiHistoryItem)
 		grp.Post("/api/generate-and-publish", r.apiGenerateAndPublish)
+		grp.Post("/api/generate-and-publish-page", r.apiGenerateAndPublishPage)
 		grp.Route("/api/auto-tag-posts", func(r2 chi.Router) {
 			r2.Get("/", r.apiAutoTagPosts)
 			r2.Post("/", r.apiAutoTagPosts)
@@ -433,6 +435,68 @@ func (r *Router) apiAutoTagPosts(w http.ResponseWriter, req *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
 		"message": "Auto tag feature coming soon",
+	})
+}
+
+func (r *Router) apiPublishPage(w http.ResponseWriter, req *http.Request) {
+	var data struct {
+		Title  string `json:"title"`
+		Content string `json:"content"`
+		Slug   string `json:"slug"`
+	}
+	json.NewDecoder(req.Body).Decode(&data)
+
+	if data.Title == "" || data.Content == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "标题和内容不能为空"})
+		return
+	}
+
+	result, err := r.hClient.PublishSinglePage(data.Title, data.Content, data.Slug, true)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "data": result, "message": "文档发布成功"})
+}
+
+func (r *Router) apiGenerateAndPublishPage(w http.ResponseWriter, req *http.Request) {
+	var data struct {
+		Prompt      string `json:"prompt"`
+		UseTemplate bool   `json:"use_template"`
+		TemplateID  string `json:"template_id"`
+		Language    string `json:"language"`
+		Slug        string `json:"slug"`
+	}
+	json.NewDecoder(req.Body).Decode(&data)
+
+	if data.Prompt == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "请输入 prompt"})
+		return
+	}
+
+	title, content, err := r.dsClient.GeneratePost(data.Prompt, data.TemplateID, data.Language)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": err.Error()})
+		return
+	}
+
+	result, err := r.hClient.PublishSinglePage(title, content, data.Slug, true)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{
+			"success": false,
+			"error":   fmt.Sprintf("发布失败: %v", err),
+		})
+		return
+	}
+
+	history.AddRecord(title, content, "page-published")
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"data":    result,
+		"message": "文档生成并发布成功",
+		"title":   title,
+		"content": content,
 	})
 }
 

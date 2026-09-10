@@ -3,171 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 - OnDayGitHub 网站</title>
+    <title>登录 - Halo 文章发布工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --border: #333;
+            --text-primary: #fff;
+            --text-secondary: #aaa;
+            --text-muted: #666;
+            --accent-blue: #00d4ff;
+            --accent-purple: #7c3aed;
+            --accent-pink: #f472b6;
         }
-        .login-container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
+        body { background: var(--bg-primary); min-height: 100vh; font-family: 'Inter', -apple-system, sans-serif; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); }
+        .btn-gradient { 
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
         }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+        .btn-gradient:hover { opacity: 0.9; }
+        .input-field { 
+            background: #111; 
+            border: 1px solid var(--border); 
+            color: var(--text-primary);
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
-        }
-        .admin-info {
-            background-color: #e9ecef;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-            border-left: 4px solid #28a745;
-        }
-        .admin-info h3 {
-            margin-top: 0;
-            color: #495057;
-        }
-        .qr-code {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .qr-code img {
-            max-width: 200px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            background-color: white;
-        }
-        input[type="text"]:focus, input[type="password"]:focus {
-            border-color: #007bff;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-        code {
-            background-color: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        @media (max-width: 480px) {
-            body { padding: 15px; min-height: 100dvh; }
-            .login-container { padding: 24px 20px; margin: 10px; }
-            h1 { font-size: 1.4em; margin-bottom: 20px; }
-            input[type="text"], button { min-height: 48px; }
-        }
+        .input-field:focus { border-color: var(--accent-blue); outline: none; }
+        .input-field::placeholder { color: var(--text-muted); }
+        .preview-content pre { background: #0a0a0a; color: #e0e0e0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border); }
+        .preview-content code { background: #222; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <h1>Google Authenticator 验证</h1>
-        
-        {{if .error}}
-        <div class="error-message">
-            {{.error}}
+<body class="flex items-center justify-center p-4">
+    <div class="card w-full max-w-md rounded-xl overflow-hidden">
+        <!-- Header -->
+        <div class="btn-gradient p-8 text-center">
+            <div class="text-5xl mb-4">🔐</div>
+            <h1 class="text-2xl font-bold text-white">Halo 文章发布工具</h1>
+            <p class="text-white/70 mt-2 text-sm">Google Authenticator 验证</p>
         </div>
-        {{end}}
-        
-        <form method="POST">
-            <div class="form-group">
-                <label for="token">请输入 Google Authenticator 验证码：</label>
-                <input type="text" id="token" name="token" placeholder="输入 6 位验证码" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required autofocus>
+
+        <div class="p-8">
+            {{if .error}}
+            <div class="mb-6 p-4 bg-red-900/30 text-red-400 border border-red-800 rounded-lg text-center text-sm">
+                {{.error}}
             </div>
-            <button type="submit">验证并登录</button>
-        </form>
-        
-        {{if not .show_config}}
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <h3 style="margin-bottom: 15px; font-size: 16px; color: #555;">需要配置 Google Authenticator？</h3>
-            <p style="margin-bottom: 15px; font-size: 14px; color: #666;">输入管理员密码以查看配置信息：</p>
-            <form method="POST">
-                <div class="form-group">
-                    <label for="show_config_password">管理员密码：</label>
-                    <input type="password" id="show_config_password" name="show_config_password" placeholder="请输入管理员密码" required>
+            {{end}}
+
+            <form method="POST" class="space-y-5">
+                <div>
+                    <label class="block text-cyan-400 text-sm font-mono font-semibold mb-2 tracking-wider">CODE</label>
+                    <input type="text" name="token" 
+                        class="input-field w-full px-4 py-4 text-center text-2xl tracking-[0.5em] rounded-lg font-mono"
+                        placeholder="000000" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" 
+                        autocomplete="one-time-code" required autofocus>
+                    <p class="text-[#555] text-xs mt-2 text-center">打开 Google Authenticator 输入6位验证码</p>
                 </div>
-                <button type="submit" style="background-color: #6c757d;">显示配置信息</button>
+                <button type="submit" 
+                    class="w-full py-4 btn-gradient text-white font-semibold rounded-lg transition-all">
+                    验证并登录
+                </button>
             </form>
-        </div>
-        {{end}}
-        
-        {{if .show_config}}
-        <div class="admin-info">
-            <h3>Google Authenticator 配置信息</h3>
-            <p style="color: #dc3545; font-weight: bold; margin-top: 10px;">⚠️ 请妥善保管此信息，不要分享给他人！⚠️</p>
-            <p>请使用以下信息配置 Google Authenticator：</p>
-            <div class="qr-code">
-                {{if .qr_code_url}}
-                <p>请使用 Google Authenticator 扫描以下二维码：</p>
-                <div id="qrcode" style="display: inline-block; padding: 10px; background: white; border: 1px solid #ddd;"></div>
-                <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-                <script>
-                    new QRCode(document.getElementById("qrcode"), {
-                        text: "{{.qr_code_url}}",
-                        width: 200,
-                        height: 200
-                    });
-                </script>
-                {{else}}
-                <p>⚠️ 无法显示二维码图片。</p>
-                <p>请手动输入密钥：</p>
-                {{end}}
-                <p style="margin-top: 15px;">密钥（手动输入时使用）：</p>
-                <p style="word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 4px;"><strong>{{.secret}}</strong></p>
+
+            {{if not .show_config}}
+            <div class="mt-8 pt-6 border-t border-[#333]">
+                <details class="group">
+                    <summary class="cursor-pointer text-[#666] hover:text-cyan-400 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                        <span>⚙️ 配置 Google Authenticator</span>
+                        <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </summary>
+                    <div class="mt-4 p-4 rounded-lg bg-[#111] border border-[#333]">
+                        <p class="text-[#666] text-xs mb-3">输入管理员密码查看配置：</p>
+                        <form method="POST" class="space-y-3">
+                            <input type="password" name="show_config_password" 
+                                class="input-field w-full px-4 py-3 rounded-lg text-sm"
+                                placeholder="管理员密码" required>
+                            <button type="submit" 
+                                class="w-full py-3 bg-[#222] hover:bg-[#333] text-[#aaa] font-medium rounded-lg transition-colors text-sm border border-[#444]">
+                                显示配置
+                            </button>
+                        </form>
+                    </div>
+                </details>
             </div>
-            <a href="/hide-config" style="display: inline-block; margin-top: 20px; padding: 8px 16px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px;">
-                隐藏配置信息
-            </a>
+            {{end}}
+
+            {{if .show_config}}
+            <div class="mt-8 p-5 rounded-lg bg-[#111] border border-purple-800">
+                <h3 class="font-semibold text-purple-400 mb-3 flex items-center gap-2 text-sm">
+                    <span>🔑</span> 配置信息
+                </h3>
+                <p class="text-red-400 text-xs mb-4">⚠️ 请妥善保管，不要分享！</p>
+                
+                {{if .qr_code_url}}
+                <div class="text-center mb-5">
+                    <p class="text-[#666] text-xs mb-3">扫描二维码：</p>
+                    <div id="qrcode" class="inline-block p-3 bg-white rounded-lg"></div>
+                    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+                    <script>
+                        new QRCode(document.getElementById("qrcode"), {
+                            text: "{{.qr_code_url}}",
+                            width: 160,
+                            height: 160,
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    </script>
+                </div>
+                {{else}}
+                <p class="text-center text-[#555] text-sm mb-4">无法显示二维码</p>
+                {{end}}
+
+                <div class="p-3 rounded-lg bg-[#0a0a0a] border border-[#222]">
+                    <p class="text-[#555] text-xs mb-1">密钥</p>
+                    <p class="font-mono text-sm text-cyan-400 break-all select-all">{{.secret}}</p>
+                </div>
+
+                <a href="/hide-config" 
+                    class="block mt-4 py-3 text-center bg-red-900/50 hover:bg-red-900/70 text-red-400 font-medium rounded-lg transition-colors text-sm border border-red-800">
+                    隐藏配置
+                </a>
+            </div>
+            {{end}}
         </div>
-        {{end}}
     </div>
 </body>
 </html>
