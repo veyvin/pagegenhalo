@@ -3,185 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halo 文章发布工具</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>页生 · Halo 文章发布工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;700;900&family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0f0f0f;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #111;
-            --border: #333;
-            --text-primary: #fff;
-            --text-secondary: #aaa;
-            --text-muted: #666;
-            --accent-blue: #00d4ff;
-            --accent-purple: #7c3aed;
-            --accent-pink: #f472b6;
+            --bg: #E8E8EA;
+            --card: #0C0C0D;
+            --card-2: #1A1A1C;
+            --lime-1: #D4F54A;
+            --lime-2: #6DB300;
+            --orange: #FF8A1F;
+            --text-dim: #8A8A8E;
+            --ink: #111113;
         }
-        body { background: var(--bg-primary); min-height: 100vh; font-family: 'Inter', -apple-system, sans-serif; }
-        .card { background: var(--bg-secondary); border: 1px solid var(--border); }
-        .btn-gradient { 
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: Inter, "Noto Sans SC", sans-serif;
+            min-height: 100vh;
         }
-        .btn-gradient:hover { opacity: 0.9; }
-        .input-field { 
-            background: var(--bg-tertiary); 
-            border: 1px solid var(--border); 
-            color: var(--text-primary);
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: .32;
+            background-image: radial-gradient(rgba(0,0,0,.22) 0.55px, transparent 0.7px);
+            background-size: 3px 3px;
         }
-        .input-field:focus { border-color: var(--accent-blue); outline: none; }
-        .input-field::placeholder { color: var(--text-muted); }
-        .tag { background: var(--accent-purple); }
-        .history-item { border-bottom: 1px solid var(--border); }
-        .history-item:hover { background: var(--bg-tertiary); }
-        .preview-content h2 { font-size: 1.5rem; font-weight: bold; margin: 1.5rem 0 1rem; color: var(--accent-pink); }
-        .preview-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.75rem; color: var(--accent-blue); }
-        .preview-content p { margin: 0.75rem 0; line-height: 1.75; color: var(--text-secondary); }
-        .preview-content pre { background: #0a0a0a; color: #e0e0e0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border); }
-        .preview-content code { background: #222; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; color: var(--accent-blue); font-family: 'JetBrains Mono', monospace; }
-        .preview-content pre code { background: transparent; padding: 0; }
-        .preview-content blockquote { border-left: 3px solid var(--accent-purple); padding-left: 1rem; margin: 1rem 0; color: var(--text-muted); }
-        .preview-content ul, .preview-content ol { margin: 0.75rem 0; padding-left: 1.5rem; color: var(--text-secondary); }
-        .preview-content li { margin: 0.375rem 0; }
+        a { color: inherit; }
+        .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px 22px 80px; }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .logo-mark {
+            width: 32px; height: 32px; border-radius: 10px;
+            background: var(--card); color: var(--lime-1);
+            display: grid; place-items: center; font-weight: 700;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 22px rgba(0,0,0,.18);
+        }
+        .logo-cn { font-family: "Noto Sans SC", sans-serif; font-weight: 900; font-size: 18px; }
+        .logo-en { font-family: "Instrument Serif", serif; font-style: italic; font-size: 18px; }
+        .pill {
+            border-radius: 999px; padding: 5px 11px; font-size: 10px; letter-spacing: .14em;
+            background: #fff; box-shadow: 4px 4px 8px rgba(163,163,170,.4), -3px -3px 7px rgba(255,255,255,.9);
+        }
+        nav {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #5c5c62;
+        }
+        nav a { text-decoration: none; }
+        nav a:hover { color: var(--ink); }
+        nav .sep { opacity: .4; }
+
+        .hero { position: relative; margin: 8px 0 28px; min-height: 170px; }
+        .hero h1 {
+            font-family: "Noto Sans SC", sans-serif;
+            font-weight: 900;
+            font-size: clamp(52px, 9vw, 92px);
+            line-height: .86;
+            letter-spacing: -.05em;
+        }
+        .hero h1 .en {
+            display: block;
+            font-family: "Instrument Serif", serif;
+            font-weight: 400;
+            font-style: italic;
+            font-size: .58em;
+            letter-spacing: -.02em;
+        }
+        .hero .sub {
+            margin-top: 14px;
+            max-width: 420px;
+            color: #5a5a60;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .hand {
+            font-family: "Instrument Serif", serif;
+            font-style: italic;
+            margin-top: 8px;
+            font-size: 18px;
+        }
+        .brace {
+            position: absolute; right: 180px; top: 8px;
+            color: #7a7a80; font-size: 13px;
+        }
+        .star { position: absolute; left: -6px; top: -8px; color: var(--orange); font-size: 14px; }
+        .float-cluster {
+            position: absolute; right: 0; top: -10px;
+            width: 170px; height: 170px;
+            perspective: 600px;
+        }
+        .key-3d, .box-3d {
+            position: absolute;
+            animation: bob 5.5s ease-in-out infinite;
+        }
+        .key-3d {
+            right: 8px; top: 8px;
+            width: 86px; height: 86px; border-radius: 18px;
+            background: linear-gradient(180deg, #E8FF7A, #6DB300);
+            box-shadow: 0 16px 0 #3f6c00, 0 26px 36px rgba(0,0,0,.25), 0 0 28px rgba(160,230,0,.5);
+            transform: rotateX(16deg) rotateY(-24deg);
+            display: grid; place-items: center;
+            font-family: VT323, monospace; font-size: 20px; color: #1a3300;
+        }
+        .box-3d {
+            left: 0; bottom: 8px;
+            width: 72px; height: 58px;
+            background: linear-gradient(145deg, #c9a36a, #8a6230);
+            border-radius: 6px;
+            box-shadow: 8px 14px 0 #5c3d18, 0 24px 30px rgba(255,138,31,.18);
+            transform: rotateX(18deg) rotateY(28deg);
+            animation-delay: -.8s;
+        }
+        .box-3d::after {
+            content: "×";
+            position: absolute; inset: 0;
+            display: grid; place-items: center;
+            color: #3a240e; font-size: 22px; font-weight: 700;
+        }
+        @keyframes bob {
+            0%,100% { translate: 0 0; }
+            50% { translate: 0 -12px; }
+        }
+
+        .ticker {
+            overflow: hidden; white-space: nowrap;
+            background: var(--card); color: #fff;
+            border-radius: 999px; padding: 10px 0; margin-bottom: 22px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 16px 30px rgba(0,0,0,.18);
+            font-size: 11px; letter-spacing: .28em;
+        }
+        .ticker-track { display: inline-flex; animation: marquee 22s linear infinite; }
+        .ticker-track span { padding: 0 28px; }
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        .bento {
+            display: grid;
+            grid-template-columns: 1.35fr .9fr;
+            gap: 18px;
+        }
+        .card {
+            background: var(--card);
+            color: #fff;
+            border-radius: 32px;
+            padding: 22px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 30px 60px rgba(0,0,0,.22);
+            transition: transform .2s ease, box-shadow .2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 38px 70px rgba(0,0,0,.28);
+        }
+        .card::before {
+            content: "";
+            position: absolute; inset: 0;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.08) 50%, transparent 70%);
+            transform: translateX(-120%);
+            pointer-events: none;
+        }
+        .card:hover::before { animation: sweep .7s ease; }
+        @keyframes sweep { to { transform: translateX(120%); } }
+        .card.light {
+            background: #f3f3f5;
+            color: var(--ink);
+            box-shadow: 8px 8px 16px rgba(163,163,170,.35), -6px -6px 14px rgba(255,255,255,.85);
+        }
+        .card.light:hover { box-shadow: 12px 12px 22px rgba(163,163,170,.4), -8px -8px 16px rgba(255,255,255,.95); }
+        .nest {
+            background: var(--card-2);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 18px;
+            padding: 14px;
+        }
+        .light .nest { background: #fff; border-color: rgba(0,0,0,.06); }
+        .kicker {
+            font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;
+        }
+        .card-title {
+            font-family: "Noto Sans SC", sans-serif; font-weight: 900; font-size: 28px; line-height: 1;
+            margin-bottom: 4px;
+        }
+        .card-title em {
+            font-family: "Instrument Serif", serif; font-style: italic; font-weight: 400; font-size: .72em;
+            color: var(--text-dim);
+        }
+        textarea, select, input[type="text"], input[type="password"] {
+            width: 100%; border: 0; outline: none; background: transparent; color: inherit; font-family: inherit;
+        }
+        #prompt {
+            min-height: 168px; resize: vertical; color: #eee; font-size: 15px; line-height: 1.6;
+        }
+        #prompt::placeholder { color: #5a5a60; }
+        .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .toggle {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: 999px;
+            background: var(--card-2); border: 1px solid rgba(255,255,255,.08);
+            cursor: pointer; user-select: none;
+        }
+        .toggle input { accent-color: var(--lime-2); width: 16px; height: 16px; }
+        .select-chip {
+            flex: 1; min-width: 120px;
+            background: var(--card-2); border: 1px solid rgba(255,255,255,.08);
+            border-radius: 18px; padding: 8px 12px;
+        }
+        .select-chip label { display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
+        .select-chip select { color: #fff; font-size: 13px; margin-top: 2px; background: transparent; }
+        .select-chip select option { color: #111; }
+
+        .chip-box {
+            display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; align-items: center;
+        }
+        .tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(180deg, #2a2a2e, #151517);
+            color: #fff; border-radius: 999px; padding: 6px 10px; font-size: 12px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 4px 0 #050506;
+        }
+        .tag-remove { cursor: pointer; color: var(--text-dim); }
+
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+        .btn-key {
+            border: 0; cursor: pointer; border-radius: 18px; padding: 14px 12px;
+            color: #ddd; font-weight: 600;
+            background: linear-gradient(180deg, #2c2c30, #151517);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 6px 0 #050506, 0 12px 18px rgba(0,0,0,.3);
+            transition: transform .1s ease, box-shadow .1s ease;
+        }
+        .btn-key:hover { transform: translateY(-2px); }
+        .btn-key:active { transform: translateY(4px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 2px 0 #050506; }
+        .slider {
+            grid-column: 1 / -1;
+            position: relative;
+            height: 64px;
+            border-radius: 999px;
+            background: #111;
+            border: 1px solid rgba(255,255,255,.08);
+            overflow: hidden;
+            user-select: none;
+        }
+        .slider-fill {
+            position: absolute; inset: 6px auto 6px 6px; width: 52px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--lime-1), var(--lime-2));
+            box-shadow: 0 0 24px rgba(160,230,0,.45);
+            pointer-events: none;
+        }
+        .slider.armed .slider-fill, .slider.done .slider-fill { width: calc(100% - 12px); }
+        .slider-label {
+            position: absolute; inset: 0;
+            display: grid; place-items: center;
+            font-family: "Noto Sans SC", sans-serif; font-weight: 900;
+            letter-spacing: .08em; pointer-events: none; color: #9aa;
+            font-size: 13px;
+            padding: 0 18px 0 68px;
+        }
+        .slider.done .slider-label { color: #111; }
+        .slider-thumb {
+            position: absolute; top: 6px; left: 6px;
+            width: 52px; height: 52px; border-radius: 50%; border: 0; cursor: grab;
+            background: radial-gradient(circle at 30% 30%, #3a3a40, #0a0a0b);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 8px 16px rgba(0,0,0,.4);
+            color: var(--lime-1); font-size: 18px;
+            display: grid; place-items: center;
+            z-index: 2;
+        }
+        .slider.dragging .slider-thumb, .slider.armed .slider-fill {
+            box-shadow: 0 0 28px rgba(160,230,0,.7);
+        }
+        .slider.busy .slider-label { color: var(--lime-1); }
+
+        #result { margin-top: 14px; padding: 12px 14px; border-radius: 16px; font-size: 13px; }
+        #result.ok { background: rgba(109,179,0,.15); color: var(--lime-1); border: 1px solid rgba(109,179,0,.35); }
+        #result.bad { background: rgba(255,138,31,.12); color: var(--orange); border: 1px solid rgba(255,138,31,.35); }
+
+        .preview-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .preview-body {
+            max-height: 420px; overflow: auto; padding: 16px;
+        }
+        #previewTitle { font-family: "Noto Sans SC", sans-serif; font-weight: 900; font-size: 22px; margin-bottom: 12px; }
+        .preview-content h2 { font-size: 1.2rem; font-weight: 800; margin: 1.2rem 0 .6rem; }
+        .preview-content h3 { font-size: 1.05rem; font-weight: 700; margin: 1rem 0 .5rem; color: var(--lime-1); }
+        .preview-content p { margin: .7rem 0; line-height: 1.75; color: #c8c8cc; }
+        .preview-content pre { background: #080808; padding: 12px; border-radius: 12px; overflow: auto; border: 1px solid rgba(255,255,255,.08); }
+        .preview-content code { font-family: VT323, monospace; color: var(--lime-1); }
+        .preview-content ul, .preview-content ol { margin: .6rem 0; padding-left: 1.3rem; color: #c8c8cc; }
+        .btn-mini {
+            border: 0; cursor: pointer; border-radius: 999px; padding: 10px 16px;
+            background: linear-gradient(180deg, var(--lime-1), var(--lime-2));
+            color: #111; font-weight: 800;
+            box-shadow: 0 0 18px rgba(160,230,0,.45);
+        }
+        .btn-mini:disabled { opacity: .45; }
+
+        .history-list { max-height: 280px; overflow: auto; }
+        .history-item {
+            display: flex; justify-content: space-between; gap: 12px;
+            padding: 12px 4px; border-bottom: 1px solid rgba(255,255,255,.06); cursor: pointer;
+        }
+        .history-item:hover .ht { color: var(--lime-1); }
+        .ht { font-size: 14px; }
+        .hs { font-family: VT323, monospace; color: var(--text-dim); font-size: 14px; white-space: nowrap; }
+        .empty { color: var(--text-dim); text-align: center; padding: 28px 8px; font-size: 13px; }
+
+        .hidden { display: none !important; }
         .loading { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .glow { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .span-2 { grid-column: 1 / -1; }
+        .prompt-card { min-height: 100%; }
+
+        @media (max-width: 860px) {
+            .bento { grid-template-columns: 1fr; }
+            .float-cluster, .brace { display: none; }
+            nav { display: none; }
+            .hero h1 { font-size: 56px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before { animation: none !important; transition: none !important; }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-5xl mx-auto">
-        <div class="card rounded-xl overflow-hidden">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 p-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-                            <span>🚀</span> Halo 文章发布工具
-                        </h1>
-                        <p class="text-white/70 mt-2 text-sm">使用 DeepSeek API 智能生成文章并一键发布</p>
-                    </div>
-                    <a href="/logout" class="px-4 py-2 bg-black/20 hover:bg-black/30 text-white rounded-lg transition-colors text-sm">
-                        登出
-                    </a>
-                </div>
+<body>
+    <div class="wrap">
+        <header class="topbar">
+            <div class="brand">
+                <div class="logo-mark">P</div>
+                <span class="logo-cn">页生</span>
+                <span class="logo-en">pagegen</span>
+                <span class="pill">HALO CMS</span>
             </div>
+            <nav>
+                <a href="#composer">Generate</a><span class="sep">//</span>
+                <a href="#preview">Preview</a><span class="sep">//</span>
+                <a href="#history">History</a><span class="sep">//</span>
+                <a href="/logout">Logout</a>
+            </nav>
+        </header>
 
-            <div class="p-6">
-                <form id="articleForm" class="space-y-5">
-                    <!-- Prompt Input -->
-                    <div>
-                        <label class="block text-cyan-400 text-sm font-mono font-semibold mb-2 tracking-wider">PROMPT</label>
-                        <textarea id="prompt" rows="4" 
-                            class="input-field w-full px-4 py-3 rounded-lg font-mono text-sm resize-none"
-                            placeholder="请为今天的 GitHub Trending 写一篇技术博客..."></textarea>
-                    </div>
+        <section class="hero">
+            <span class="star">✦</span>
+            <p class="brace">{About Pagegen}</p>
+            <h1>写实发布<span class="en">Publish.</span></h1>
+            <p class="hand">I Need A Happy Post</p>
+            <p class="sub">浅灰桌面上一块黑硬件。把 prompt 推进去，DeepSeek 写稿，Halo 发出去。</p>
+            <div class="float-cluster" aria-hidden="true">
+                <div class="box-3d"></div>
+                <div class="key-3d">esc</div>
+            </div>
+        </section>
 
-                    <!-- Options Grid -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="flex items-center gap-2 p-3 rounded-lg bg-[#111] border border-[#333]">
-                            <input type="checkbox" id="use_template" checked class="w-4 h-4 accent-cyan-400 cursor-pointer">
-                            <label for="use_template" class="text-[#aaa] text-sm cursor-pointer">使用模板</label>
-                        </div>
-                        <div class="p-3 rounded-lg bg-[#111] border border-[#333]">
-                            <label for="template_id" class="text-[#666] text-xs block mb-1">风格</label>
-                            <select id="template_id" class="w-full bg-transparent text-[#aaa] text-sm border-none outline-none">
-                                {{range .template_options}}
-                                <option value="{{.id}}">{{.label}}</option>
-                                {{end}}
-                            </select>
-                        </div>
-                        <div class="p-3 rounded-lg bg-[#111] border border-[#333]">
-                            <label for="language" class="text-[#666] text-xs block mb-1">语言</label>
-                            <select id="language" class="w-full bg-transparent text-[#aaa] text-sm border-none outline-none">
-                                <option value="zh">🇨🇳 中文</option>
-                                <option value="en">🇺🇸 English</option>
-                            </select>
-                        </div>
-                        <div class="p-3 rounded-lg bg-[#111] border border-[#333]">
-                            <label for="content_type" class="text-[#666] text-xs block mb-1">类型</label>
-                            <select id="content_type" class="w-full bg-transparent text-[#aaa] text-sm border-none outline-none">
-                                <option value="post">📝 文章</option>
-                                <option value="page">📄 文档</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Tags & Categories (only for posts) -->
-                    <div id="tags-section" class="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-purple-400 text-sm font-mono font-semibold mb-2 tracking-wider">TAGS</label>
-                            <div class="flex flex-wrap gap-2 p-3 rounded-lg bg-[#111] border border-[#333] min-h-[48px] focus-within:border-purple-500" id="tagsContainer">
-                                <input type="text" id="tagInput" 
-                                    class="flex-1 min-w-[80px] bg-transparent text-[#aaa] text-sm border-none outline-none"
-                                    placeholder="+ 添加标签">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-pink-400 text-sm font-mono font-semibold mb-2 tracking-wider">CATEGORIES</label>
-                            <div class="flex flex-wrap gap-2 p-3 rounded-lg bg-[#111] border border-[#333] min-h-[48px] focus-within:border-pink-500" id="categoriesContainer">
-                                <input type="text" id="categoryInput" 
-                                    class="flex-1 min-w-[80px] bg-transparent text-[#aaa] text-sm border-none outline-none"
-                                    placeholder="+ 添加分类">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Slug (only for pages) -->
-                    <div id="slug-section" class="hidden">
-                        <label class="block text-cyan-400 text-sm font-mono font-semibold mb-2 tracking-wider">SLUG</label>
-                        <input type="text" id="page_slug" 
-                            class="input-field w-full px-4 py-3 rounded-lg font-mono text-sm"
-                            placeholder="可选，默认自动生成">
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                        <button type="button" id="generateOnlyBtn" 
-                            class="flex-1 px-6 py-3 bg-[#222] hover:bg-[#333] text-[#aaa] font-medium rounded-lg transition-all border border-[#444]">
-                            👁️ 仅预览
-                        </button>
-                        <button type="button" id="generateBtn" 
-                            class="flex-1 px-6 py-3 bg-[#222] hover:bg-[#333] text-[#aaa] font-medium rounded-lg transition-all border border-[#444]">
-                            💾 保存草稿
-                        </button>
-                        <button type="button" id="generateAndPublishBtn" 
-                            class="flex-1 px-6 py-3 btn-gradient text-white font-semibold rounded-lg transition-all">
-                            🚀 生成并发布
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Result Message -->
-                <div id="result" class="hidden mt-5 p-4 rounded-lg fade-in"></div>
-
-                <!-- Preview Section -->
-                <div id="preview" class="hidden mt-6 p-5 rounded-lg bg-[#111] border border-[#333] fade-in">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-                            <span class="text-cyan-400">📄</span> 文章预览
-                        </h3>
-                        <button type="button" id="publishPreviewBtn" 
-                            class="px-4 py-2 btn-gradient text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-                            发布
-                        </button>
-                    </div>
-                    <div class="bg-[#0a0a0a] p-5 rounded-lg border border-[#222] max-h-[500px] overflow-y-auto">
-                        <div id="previewTitle" class="text-xl font-bold text-pink-400 mb-4"></div>
-                        <div id="previewContent" class="preview-content text-[#aaa] text-sm"></div>
-                    </div>
-                </div>
-
-                <!-- History Section -->
-                <div class="mt-6">
-                    <h3 class="text-sm font-mono font-semibold text-[#666] tracking-wider mb-3">HISTORY</h3>
-                    <div id="historyList" class="rounded-lg bg-[#111] border border-[#333] max-h-[250px] overflow-y-auto">
-                        <div class="p-4 text-center text-[#555] text-sm">加载中...</div>
-                    </div>
-                </div>
+        <div class="ticker" aria-hidden="true">
+            <div class="ticker-track">
+                <span>@PAGEGEN · 写实按钮 · 写实卡片 · DEEPSEEK→HALO · TACTILE UI ·</span>
+                <span>@PAGEGEN · 写实按钮 · 写实卡片 · DEEPSEEK→HALO · TACTILE UI ·</span>
             </div>
         </div>
+
+        <form id="articleForm" class="bento">
+            <section class="card prompt-card" id="composer">
+                <p class="kicker">Prompt · 主控台</p>
+                <h2 class="card-title">写实稿件 <em>Draft UI</em></h2>
+                <div class="nest" style="margin-top:14px">
+                    <textarea id="prompt" placeholder="请为今天的 GitHub Trending 写一篇技术博客..."></textarea>
+                </div>
+                <div class="row">
+                    <label class="toggle">
+                        <input type="checkbox" id="use_template" checked>
+                        使用模板
+                    </label>
+                    <div class="select-chip">
+                        <label for="template_id">风格</label>
+                        <select id="template_id">
+                            {{range .template_options}}
+                            <option value="{{.id}}">{{.label}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="select-chip">
+                        <label for="language">语言</label>
+                        <select id="language">
+                            <option value="zh">中文</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="select-chip">
+                        <label for="content_type">类型</label>
+                        <select id="content_type">
+                            <option value="post">文章</option>
+                            <option value="page">文档</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="button" id="generateOnlyBtn" class="btn-key">仅预览</button>
+                    <button type="button" id="generateBtn" class="btn-key">保存草稿</button>
+                    <div class="slider" id="publishSlider">
+                        <div class="slider-fill" id="sliderFill"></div>
+                        <button type="button" class="slider-thumb" id="generateAndPublishBtn" aria-label="生成并发布">▶</button>
+                        <div class="slider-label" id="sliderLabel">滑到终点 · 生成并发布</div>
+                    </div>
+                </div>
+                <div id="result" class="hidden"></div>
+            </section>
+
+            <aside class="card light">
+                <p class="kicker">Meta</p>
+                <h2 class="card-title">标签卡 <em>Card UI</em></h2>
+                <div id="tags-section">
+                    <div class="nest" style="margin-top:14px">
+                        <p class="kicker" style="color:#888">Tags</p>
+                        <div class="chip-box" id="tagsContainer">
+                            <input type="text" id="tagInput" placeholder="+ 添加标签">
+                        </div>
+                    </div>
+                    <div class="nest" style="margin-top:12px">
+                        <p class="kicker" style="color:#888">Categories</p>
+                        <div class="chip-box" id="categoriesContainer">
+                            <input type="text" id="categoryInput" placeholder="+ 添加分类">
+                        </div>
+                    </div>
+                </div>
+                <div id="slug-section" class="hidden nest" style="margin-top:14px">
+                    <p class="kicker" style="color:#888">Slug</p>
+                    <input type="text" id="page_slug" placeholder="可选，默认自动生成">
+                </div>
+                <p class="hand" style="margin-top:18px;color:#666">(快乐离我只差一张稿)</p>
+            </aside>
+
+            <section class="card span-2 hidden" id="preview">
+                <div class="preview-head">
+                    <div>
+                        <p class="kicker">Preview</p>
+                        <h2 class="card-title">文章预览 <em>Read</em></h2>
+                    </div>
+                    <button type="button" id="publishPreviewBtn" class="btn-mini">发布</button>
+                </div>
+                <div class="nest preview-body">
+                    <div id="previewTitle"></div>
+                    <div id="previewContent" class="preview-content"></div>
+                </div>
+            </section>
+
+            <section class="card span-2" id="history">
+                <p class="kicker">History</p>
+                <h2 class="card-title">过往稿件 <em>YYZ→HND</em></h2>
+                <div class="nest history-list" id="historyList" style="margin-top:14px">
+                    <div class="empty">加载中...</div>
+                </div>
+            </section>
+        </form>
     </div>
 
     <script>
@@ -222,7 +508,7 @@
 
         function showResult(message, isSuccess = true) {
             const el = document.getElementById('result');
-            el.className = `mt-5 p-4 rounded-lg fade-in ${isSuccess ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-800' : 'bg-red-900/30 text-red-400 border border-red-800'}`;
+            el.className = isSuccess ? 'ok' : 'bad';
             el.textContent = message;
             el.classList.remove('hidden');
             if (isSuccess) setTimeout(() => el.classList.add('hidden'), 3000);
@@ -234,6 +520,7 @@
             document.getElementById('previewContent').innerHTML = content;
             document.getElementById('preview').classList.remove('hidden');
             document.getElementById('publishPreviewBtn').disabled = false;
+            document.getElementById('preview').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function escapeHtml(s) {
@@ -248,37 +535,119 @@
                 const res = await fetch('/api/history?limit=20');
                 const data = await res.json();
                 if (!data.success || !data.data?.length) {
-                    el.innerHTML = '<div class="p-4 text-center text-[#555] text-sm">暂无历史记录</div>';
+                    el.innerHTML = '<div class="empty">暂无历史记录</div>';
                     return;
                 }
                 el.innerHTML = data.data.map(item => {
                     const time = item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '';
-                    return `<div class="history-item flex justify-between items-center p-4 cursor-pointer" data-id="${item.id}">
-                        <span class="text-[#ddd] text-sm font-medium">${escapeHtml(item.title || '无标题')}</span>
-                        <span class="text-[#555] text-xs">${time}</span>
+                    return `<div class="history-item" data-id="${item.id}">
+                        <span class="ht">${escapeHtml(item.title || '无标题')}</span>
+                        <span class="hs">${time}</span>
                     </div>`;
                 }).join('');
             } catch (e) {
-                el.innerHTML = '<div class="p-4 text-center text-red-500 text-sm">加载失败</div>';
+                el.innerHTML = '<div class="empty">加载失败</div>';
             }
         }
 
+        const slider = document.getElementById('publishSlider');
+        const thumb = document.getElementById('generateAndPublishBtn');
+        const fill = document.getElementById('sliderFill');
+        const sliderLabel = document.getElementById('sliderLabel');
+
+        function resetSlider() {
+            slider.classList.remove('armed', 'done', 'dragging', 'busy');
+            fill.style.width = '52px';
+            thumb.style.left = '6px';
+            thumb.textContent = '▶';
+            sliderLabel.textContent = '滑到终点 · 生成并发布';
+        }
+
         async function apiCall(url, payload, btn, btnText) {
+            const isPublish = btn === thumb;
             btn.disabled = true;
-            btn.innerHTML = '<svg class="loading inline-block w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>生成中...';
+            if (isPublish) {
+                slider.classList.add('busy');
+                sliderLabel.textContent = '生成中...';
+                thumb.innerHTML = '<svg class="loading" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+            } else {
+                btn.innerHTML = '<svg class="loading" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg> 生成中...';
+            }
             try {
                 const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 return await res.json();
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = btnText;
+                if (isPublish) resetSlider();
+                else btn.innerHTML = btnText;
             }
         }
+
+        async function runPublish(e) {
+            const payload = getPayload();
+            if (!payload.prompt) { showResult('请输入 prompt', false); resetSlider(); return; }
+            const isPage = isPageMode();
+            const url = isPage ? '/api/generate-and-publish-page' : '/api/generate-and-publish';
+            const data = await apiCall(url, payload, thumb, '▶');
+            if (data.title && data.content) showPreview(data.title, data.content);
+            if (data.success) { showResult(isPage ? '文档发布成功' : '文章发布成功', true); loadHistory(); }
+            else showResult(data.error || '发布失败', false);
+        }
+
+        function setupSlider() {
+            let dragging = false;
+            const maxLeft = () => slider.clientWidth - 58;
+
+            function setX(x) {
+                const max = maxLeft();
+                const left = Math.max(6, Math.min(x, max));
+                thumb.style.left = left + 'px';
+                fill.style.width = (left + 46) + 'px';
+                const progress = (left - 6) / (max - 6 || 1);
+                if (progress > 0.15) slider.classList.add('armed');
+                else slider.classList.remove('armed');
+                return progress;
+            }
+
+            function start(clientX) {
+                dragging = true;
+                slider.classList.add('dragging');
+            }
+            function move(clientX) {
+                if (!dragging) return;
+                const rect = slider.getBoundingClientRect();
+                setX(clientX - rect.left - 26);
+            }
+            async function end() {
+                if (!dragging) return;
+                dragging = false;
+                slider.classList.remove('dragging');
+                const progress = (parseFloat(thumb.style.left) - 6) / (maxLeft() - 6 || 1);
+                if (progress >= 0.92) {
+                    slider.classList.add('done');
+                    sliderLabel.textContent = '发布';
+                    await runPublish();
+                } else {
+                    resetSlider();
+                }
+            }
+
+            thumb.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                thumb.setPointerCapture(e.pointerId);
+                start(e.clientX);
+            });
+            thumb.addEventListener('pointermove', (e) => move(e.clientX));
+            thumb.addEventListener('pointerup', end);
+            thumb.addEventListener('pointercancel', end);
+            thumb.addEventListener('click', (e) => e.preventDefault());
+        }
+        setupSlider();
 
         document.getElementById('generateOnlyBtn').addEventListener('click', async (e) => {
             const payload = getPayload();
             if (!payload.prompt) { showResult('请输入 prompt', false); return; }
-            const data = await apiCall('/api/generate-only', payload, e.target, '👁️ 仅预览');
+            const data = await apiCall('/api/generate-only', payload, e.currentTarget, '仅预览');
             if (data.success && data.title && data.content) { showResult(data.message || '已生成', true); showPreview(data.title, data.content); loadHistory(); }
             else showResult(data.error || '生成失败', false);
         });
@@ -286,29 +655,17 @@
         document.getElementById('generateBtn').addEventListener('click', async (e) => {
             const payload = getPayload();
             if (!payload.prompt) { showResult('请输入 prompt', false); return; }
-            const data = await apiCall('/api/generate', payload, e.target, '💾 保存草稿');
+            const data = await apiCall('/api/generate', payload, e.currentTarget, '保存草稿');
             if (data.success) { showResult(data.message || '已保存为草稿', true); if (data.title && data.content) showPreview(data.title, data.content); loadHistory(); }
             else showResult(data.error || '生成失败', false);
         });
 
-        document.getElementById('generateAndPublishBtn').addEventListener('click', async (e) => {
-            const payload = getPayload();
-            if (!payload.prompt) { showResult('请输入 prompt', false); return; }
-            const isPage = isPageMode();
-            const url = isPage ? '/api/generate-and-publish-page' : '/api/generate-and-publish';
-            const btnText = isPage ? '🚀 生成并发布文档' : '🚀 生成并发布';
-            const data = await apiCall(url, payload, e.target, btnText);
-            if (data.title && data.content) showPreview(data.title, data.content);
-            if (data.success) { showResult(isPage ? '文档发布成功' : '文章发布成功', true); loadHistory(); }
-            else showResult(data.error || '发布失败', false);
-        });
-
         document.getElementById('publishPreviewBtn').addEventListener('click', async (e) => {
             if (!currentPreview.title) { showResult('请先生成文章', false); return; }
-            e.target.disabled = true;
+            e.currentTarget.disabled = true;
             const isPage = isPageMode();
             const url = isPage ? '/api/publish-page' : '/api/publish';
-            const payload = isPage 
+            const payload = isPage
                 ? { title: currentPreview.title, content: currentPreview.content, slug: document.getElementById('page_slug').value.trim() }
                 : { title: currentPreview.title, content: currentPreview.content, tags, categories };
             try {
@@ -316,7 +673,7 @@
                 const data = await res.json();
                 if (data.success) { showResult(isPage ? '文档发布成功' : '文章发布成功', true); loadHistory(); }
                 else showResult('发布失败: ' + data.error, false);
-            } finally { e.target.disabled = false; }
+            } finally { e.currentTarget.disabled = false; }
         });
 
         document.getElementById('historyList').addEventListener('click', async (e) => {
@@ -351,8 +708,8 @@
             container.querySelectorAll('.tag').forEach(t => t.remove());
             tags.forEach(tag => {
                 const el = document.createElement('span');
-                el.className = 'tag px-3 py-1 rounded-full text-xs text-white flex items-center gap-1';
-                el.innerHTML = `${tag} <span class="tag-remove cursor-pointer hover:text-red-300" data-tag="${tag}">×</span>`;
+                el.className = 'tag';
+                el.innerHTML = `${tag} <span class="tag-remove" data-tag="${tag}">×</span>`;
                 container.insertBefore(el, document.getElementById('tagInput'));
             });
         }
@@ -362,8 +719,8 @@
             container.querySelectorAll('.tag').forEach(t => t.remove());
             categories.forEach(cat => {
                 const el = document.createElement('span');
-                el.className = 'tag px-3 py-1 rounded-full text-xs text-white flex items-center gap-1';
-                el.innerHTML = `${cat} <span class="tag-remove cursor-pointer hover:text-red-300" data-cat="${cat}">×</span>`;
+                el.className = 'tag';
+                el.innerHTML = `${cat} <span class="tag-remove" data-cat="${cat}">×</span>`;
                 container.insertBefore(el, document.getElementById('categoryInput'));
             });
         }
